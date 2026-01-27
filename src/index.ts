@@ -1,3 +1,4 @@
-// src/index.ts
 export { default as JBrowseContigViewer } from './Jcv';
-// Export any other components or utilities you want to make public
+
+// New standalone component API (local-only gene viewer)
+export * from './components/GeneViewer';

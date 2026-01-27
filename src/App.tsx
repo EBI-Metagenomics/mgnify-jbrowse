@@ -1,85 +1,75 @@
-import React, {useEffect, useMemo, useState} from "react";
-import {createViewState, JBrowseApp} from "@jbrowse/react-app";
 import "@fontsource/roboto";
-import getAssembly from "./components/GenomeViewer/assembly";
-import getDefaultSessionConfig from "./components/GenomeViewer/defaultSessionConfig";
-import getTracks from "./components/GenomeViewer/tracks";
-import {GenomeMeta} from "./interfaces/Genome";
-import {createRoot} from "react-dom/client";
+import React from "react";
+import { GeneViewer } from "./index";
 
-type ViewModel = ReturnType<typeof createViewState>;
+export default function App() {
+  // For the demo app, configure URLs via env vars.
+  // These should point to BGZF+indexed FASTA/GFF assets reachable by the browser.
+  const assemblyName = process.env.REACT_APP_ASSEMBLY_NAME || "assembly";
 
-// dummy object
-const genomeMeta: GenomeMeta = {
-    id: 1,
-    species: "ERZ1049444",
-    isolate_name: "ERZ1049444",
-    assembly_name: "ERZ1049444",
-    assembly_accession: "ERZ1049444.1",
-    fasta_file: "ERZ1049444.fasta",
-    gff_file: "ERZ1049444.gff3",
-    fasta_url: "http://localhost:8080/ERZ1049444/ERZ1049444.fasta",
-    gff_url: "http://localhost:8080/ERZ1049444/ERZ1049444.gff3",
-    type_strain: true,
-};
+  const fastaUrl = process.env.REACT_APP_FASTA_GZ_URL || "";
+  const faiUrl = process.env.REACT_APP_FASTA_FAI_URL || "";
+  const gziUrl = process.env.REACT_APP_FASTA_GZI_URL || "";
 
-function View() {
-    const [viewState, setViewState] = useState<ViewModel | null>(null);
+  const gffUrl = process.env.REACT_APP_GFF_BGZ_URL || "";
+  const tbiUrl = process.env.REACT_APP_GFF_TBI_URL || "";
+  const ixUrl = process.env.REACT_APP_GFF_IX_URL || undefined;
+  const ixxUrl = process.env.REACT_APP_GFF_IXX_URL || undefined;
+  const metaUrl = process.env.REACT_APP_GFF_META_URL || undefined;
 
-    const assembly = useMemo(() => {
-        return getAssembly(
-            genomeMeta,
-            process.env.REACT_APP_ASSEMBLY_INDEXES_PATH || ""
-        );
-    }, []);
+  const essentialityCsvUrl = process.env.REACT_APP_ESSENTIALITY_CSV_URL || undefined;
 
-    const tracks = useMemo(() => {
-        return getTracks(
-            genomeMeta,
-            process.env.REACT_APP_GFF_INDEXES_PATH || ""
-        );
-    }, []);
-
-
-    const sessionConfig = useMemo(() => {
-        return getDefaultSessionConfig(genomeMeta, assembly, tracks);
-    }, [assembly, tracks]);
-
-    const config = useMemo(
-        () => ({
-            assemblies: [assembly],
-            tracks: tracks.map((track) => ({
-                ...track,
-                visible: true,
-            })),
-            defaultSession: sessionConfig
-                ? { ...sessionConfig, name: "defaultSession" }
-                : undefined,
-        }),
-        [assembly, tracks, sessionConfig]
-    );
-
-    useEffect(() => {
-        console.log("Initializing JBrowse");
-        const state = createViewState({
-            config,
-            createRootFn: createRoot,
-        });
-        setViewState(state);
-    }, [config]);
-
-    if (!viewState) {
-        return null;
-    }
-
+  if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !tbiUrl) {
     return (
-        <>
-            <h1>JBrowse 2 - Loading Large Metagenomes</h1>
-            <div>
-                <JBrowseApp viewState={viewState}/>
-            </div>
-        </>
+      <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
+        <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer demo</h2>
+        <p>
+          Set the following environment variables to run the demo:
+        </p>
+        <pre style={{ background: "#f3f4f6", padding: 12, borderRadius: 8, overflow: "auto" }}>
+{`REACT_APP_ASSEMBLY_NAME=your_assembly_name
+REACT_APP_FASTA_GZ_URL=https://.../genome.fasta.gz
+REACT_APP_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
+REACT_APP_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
+REACT_APP_GFF_BGZ_URL=https://.../annotations.gff.bgz
+REACT_APP_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
+# Optional:
+REACT_APP_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
+REACT_APP_GFF_IX_URL=https://.../annotations.gff.bgz.ix
+REACT_APP_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx
+REACT_APP_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
+        </pre>
+      </div>
     );
-}
+  }
 
-export default View;
+  return (
+    <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
+      <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer demo</h2>
+      <GeneViewer
+        assembly={{
+          name: assemblyName,
+          fasta: { fastaUrl, faiUrl, gziUrl },
+        }}
+        annotation={{
+          name: "Structural Annotation",
+          gff: { gffUrl, tbiUrl, ixUrl, ixxUrl, metaUrl },
+        }}
+        essentiality={{
+          enabled: !!essentialityCsvUrl,
+          csvUrl: essentialityCsvUrl,
+          csvJoinColumn: "locus_tag",
+          csvStatusColumn: "essentiality_call",
+          featureJoinAttribute: "locus_tag",
+        }}
+        ui={{
+          showLegends: true,
+          showFeaturePanel: true,
+          showGenesInViewTable: true,
+          genesInViewTypes: ["gene"],
+        }}
+        heightPx={720}
+      />
+    </div>
+  );
+}

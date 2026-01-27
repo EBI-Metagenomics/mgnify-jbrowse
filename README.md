@@ -2,10 +2,45 @@
 
 ## Usage
 
-Run `npm install -force` and then `npm start` to start a development instance
+Run `npm install` and then `npm start` to start a development instance.
 
 Run `npm build` which produces a `build` directory that can be deployed to a
 static web server
+
+## GeneViewer (standalone component)
+
+This repo now exports a `GeneViewer` React component that provides:
+
+- JBrowse Linear Genome View (assembly + gene track)
+- Selected gene highlighting
+- Optional essentiality coloring driven by a local CSV (no API/database)
+- Feature panel (basic annotations from GFF)
+- Synced “genes in view” table (based on current viewport)
+
+### Library usage
+
+```ts
+import { GeneViewer } from 'mgnify-jbrowse'
+```
+
+### Demo app configuration (CRA)
+
+The included demo app reads URLs from env vars:
+
+```bash
+REACT_APP_ASSEMBLY_NAME=your_assembly_name
+REACT_APP_FASTA_GZ_URL=https://.../genome.fasta.gz
+REACT_APP_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
+REACT_APP_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
+REACT_APP_GFF_BGZ_URL=https://.../annotations.gff.bgz
+REACT_APP_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
+
+# Optional:
+REACT_APP_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
+REACT_APP_GFF_IX_URL=https://.../annotations.gff.bgz.ix
+REACT_APP_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx
+REACT_APP_GFF_META_URL=https://.../annotations.gff.bgz_meta.json
+```
 
 ### Generate Indexes
 
