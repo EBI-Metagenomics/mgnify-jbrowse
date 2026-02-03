@@ -8,7 +8,7 @@ const useGeneViewerState = (
     assembly: any,
     tracks: Track[],
     defaultSession: any
-) => {
+): { viewState: unknown; initializationError: Error | null } => {
     const [viewState, setViewState] = useState<ReturnType<typeof createViewState> | null>(null);
     const [initializationError, setInitializationError] = useState<Error | null>(null);
 

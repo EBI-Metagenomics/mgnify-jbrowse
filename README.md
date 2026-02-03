@@ -7,6 +7,135 @@ Run `npm install` and then `npm start` to start a development instance.
 Run `npm build` which produces a `build` directory that can be deployed to a
 static web server
 
+---
+
+## Testing
+
+### 1. Local (demo app)
+
+```bash
+# Install and start the dev server
+npm install
+npm start
+```
+
+The app reads URLs from `.env.local` (or env vars). Ensure:
+
+- FASTA, FAI, GZI, GFF, and TBI URLs point to reachable files.
+- With CRA, files in `public/` are served at the root (e.g. `http://localhost:3000/essentiality/essentiality_sample.csv`).
+- If you use `localhost:3001` for data, run a separate static server, e.g.:
+
+```bash
+npx serve public -p 3001
+```
+
+Then run the app in another terminal: `npm start` (serves on 3000).
+
+### 2. As a component in another app
+
+**Option A – npm link (for local development)**
+
+```bash
+# In mgnify-jbrowse repo
+npm run build
+npm link
+
+# In your sample app
+npm link mgnify-jbrowse
+```
+
+**Option B – install from local path**
+
+```bash
+# In your sample app
+npm install /path/to/mgnify-jbrowse
+```
+
+**Option C – pack and install tarball**
+
+```bash
+# In mgnify-jbrowse repo
+npm pack
+# Creates mgnify-jbrowse-0.1.2.tgz
+
+# In your sample app
+npm install /path/to/mgnify-jbrowse-0.1.2.tgz
+```
+
+**Usage in the consuming app:**
+
+```tsx
+import { GeneViewer } from 'mgnify-jbrowse';
+
+function App() {
+  return (
+    <GeneViewer
+      assembly={{
+        name: 'my-assembly',
+        fasta: { fastaUrl: '...', faiUrl: '...', gziUrl: '...' },
+      }}
+      annotation={{
+        name: 'Annotations',
+        gff: { gffUrl: '...', tbiUrl: '...' },
+      }}
+      essentiality={{
+        enabled: true,
+        csvUrl: '/essentiality/essentiality_sample.csv',
+      }}
+      heightPx={600}
+    />
+  );
+}
+```
+
+Ensure the host app has `react`, `react-dom`, and `@jbrowse/sv-core` as dependencies (or peer deps).
+
+### 3. Docker
+
+Add a `Dockerfile` in the project root:
+
+```dockerfile
+# Build stage
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build:lib
+RUN npm run build:app
+
+# Serve stage
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+Add `nginx.conf` to serve SPA and static assets:
+
+```nginx
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+Then:
+
+```bash
+docker build -t mgnify-jbrowse .
+docker run -p 8080:80 mgnify-jbrowse
+```
+
+Open http://localhost:8080. FASTA/GFF/essentiality URLs must be reachable from the browser (use absolute URLs, e.g. to a CDN or another server).
+
 ## GeneViewer (standalone component)
 
 This repo now exports a `GeneViewer` React component that provides:

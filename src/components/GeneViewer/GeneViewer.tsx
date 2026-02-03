@@ -70,7 +70,7 @@ export default function GeneViewer(props: GeneViewerProps) {
         const text = await res.text();
         const idx = buildEssentialityIndexFromCsv(text, {
           joinColumn: props.essentiality.csvJoinColumn ?? 'locus_tag',
-          statusColumn: props.essentiality.csvStatusColumn ?? 'essentiality_call',
+          statusColumn: props.essentiality.csvStatusColumn ?? 'essentiality',
         });
         // Convert to Map<joinKey, status>
         const statusMap = new Map<string, any>();
