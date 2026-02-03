@@ -25,3 +25,6 @@ yarn-debug.log*
 yarn-error.log*
 ERZ***
 .idea
+/public/essentiality/
+/public/fasta_files/
+/public/gff3_files/

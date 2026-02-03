@@ -20,7 +20,18 @@ This repo now exports a `GeneViewer` React component that provides:
 ### Library usage
 
 ```ts
-import { GeneViewer } from 'mgnify-jbrowse'
+import { GeneViewer, JBrowseContigViewer } from 'mgnify-jbrowse'
+```
+
+### Essentiality CSV format
+
+The plugin expects a CSV with columns `locus_tag` and `essentiality`. Example:
+
+```csv
+species,media,element,locus_tag,essentiality
+uniformis,liquid,gene,BU_ATCC8492_00001,essential
+uniformis,solid,gene,BU_ATCC8492_00001,essential
+uniformis,liquid,gene,BU_ATCC8492_00002,not_essential
 ```
 
 ### Demo app configuration (CRA)
@@ -35,7 +46,7 @@ REACT_APP_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
 REACT_APP_GFF_BGZ_URL=https://.../annotations.gff.bgz
 REACT_APP_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
 
-# Optional:
+# Optional (defaults to public/essentiality/essentiality_sample.csv):
 REACT_APP_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
 REACT_APP_GFF_IX_URL=https://.../annotations.gff.bgz.ix
 REACT_APP_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx

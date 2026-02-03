@@ -1,2 +1,2 @@
-export { default as JBrowseContigViewer } from './Jcv';
+export { default as JBrowseContigViewer } from './JBrowseContigViewer';
 export * from './components/GeneViewer';

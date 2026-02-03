@@ -18,7 +18,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JBrowseContigViewer = void 0;
-var Jcv_1 = require("./Jcv");
-Object.defineProperty(exports, "JBrowseContigViewer", { enumerable: true, get: function () { return __importDefault(Jcv_1).default; } });
+var JBrowseContigViewer_1 = require("./JBrowseContigViewer");
+Object.defineProperty(exports, "JBrowseContigViewer", { enumerable: true, get: function () { return __importDefault(JBrowseContigViewer_1).default; } });
 // New standalone component API (local-only gene viewer)
 __exportStar(require("./components/GeneViewer"), exports);

@@ -17,7 +17,7 @@ export default function App() {
   const ixxUrl = process.env.REACT_APP_GFF_IXX_URL || undefined;
   const metaUrl = process.env.REACT_APP_GFF_META_URL || undefined;
 
-  const essentialityCsvUrl = process.env.REACT_APP_ESSENTIALITY_CSV_URL || undefined;
+  const essentialityCsvUrl = process.env.REACT_APP_ESSENTIALITY_CSV_URL || "/essentiality/essentiality_sample.csv";
 
   if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !tbiUrl) {
     return (
@@ -56,10 +56,10 @@ REACT_APP_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
           gff: { gffUrl, tbiUrl, ixUrl, ixxUrl, metaUrl },
         }}
         essentiality={{
-          enabled: !!essentialityCsvUrl,
+          enabled: true,
           csvUrl: essentialityCsvUrl,
           csvJoinColumn: "locus_tag",
-          csvStatusColumn: "essentiality_call",
+          csvStatusColumn: "essentiality",
           featureJoinAttribute: "locus_tag",
         }}
         ui={{

@@ -15,7 +15,6 @@
     "@jbrowse/plugin-sequence": "^3.0.5",
     "@jbrowse/react-app": "^2.0.0",
     "@mui/system": "^5.0.0",
-    "node-polyfill-webpack-plugin": "^4.1.0",
     "pako": "^2.1.0"
   },
   "peerDependencies": {

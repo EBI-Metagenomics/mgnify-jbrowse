@@ -99,7 +99,7 @@ exports.parseCsv = parseCsv;
 function buildEssentialityIndexFromCsv(csvText, opts) {
     var _a, _b, _c, _d, _e;
     const joinColumn = (_a = opts === null || opts === void 0 ? void 0 : opts.joinColumn) !== null && _a !== void 0 ? _a : 'locus_tag';
-    const statusColumn = (_b = opts === null || opts === void 0 ? void 0 : opts.statusColumn) !== null && _b !== void 0 ? _b : 'essentiality_call';
+    const statusColumn = (_b = opts === null || opts === void 0 ? void 0 : opts.statusColumn) !== null && _b !== void 0 ? _b : 'essentiality';
     const rows = parseCsv(csvText);
     if (rows.length === 0)
         return new Map();

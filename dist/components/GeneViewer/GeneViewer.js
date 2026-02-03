@@ -50,7 +50,7 @@ function parseInitialLocation(loc) {
     return { refName, start, end };
 }
 function GeneViewer(props) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
     const [viewState, setViewState] = (0, react_1.useState)(null);
     const [error, setError] = (0, react_1.useState)(null);
     const [essentialityIndex, setEssentialityIndex] = (0, react_1.useState)(new Map());
@@ -58,12 +58,12 @@ function GeneViewer(props) {
     const [selectedGeneId, setSelectedGeneId] = (0, react_1.useState)((_c = (_b = props.initialSelection) === null || _b === void 0 ? void 0 : _b.locusTag) !== null && _c !== void 0 ? _c : null);
     const [genesInView, setGenesInView] = (0, react_1.useState)([]);
     const joinAttribute = (_e = (_d = props.essentiality) === null || _d === void 0 ? void 0 : _d.featureJoinAttribute) !== null && _e !== void 0 ? _e : 'locus_tag';
-    const genesInViewTypes = (_g = (_f = props.ui) === null || _f === void 0 ? void 0 : _f.genesInViewTypes) !== null && _g !== void 0 ? _g : ['gene'];
+    const genesInViewTypes = (0, react_1.useMemo)(() => { var _a, _b; return (_b = (_a = props.ui) === null || _a === void 0 ? void 0 : _a.genesInViewTypes) !== null && _b !== void 0 ? _b : ['gene']; }, [(_f = props.ui) === null || _f === void 0 ? void 0 : _f.genesInViewTypes]);
     // Keep internal essentiality-enabled in sync with props changes
     (0, react_1.useEffect)(() => {
         var _a;
         setEssentialityEnabled(!!((_a = props.essentiality) === null || _a === void 0 ? void 0 : _a.enabled));
-    }, [(_h = props.essentiality) === null || _h === void 0 ? void 0 : _h.enabled]);
+    }, [(_g = props.essentiality) === null || _g === void 0 ? void 0 : _g.enabled]);
     // Load essentiality CSV (optional)
     (0, react_1.useEffect)(() => {
         let cancelled = false;
@@ -100,9 +100,9 @@ function GeneViewer(props) {
         };
     }, [
         essentialityEnabled,
-        (_j = props.essentiality) === null || _j === void 0 ? void 0 : _j.csvUrl,
-        (_k = props.essentiality) === null || _k === void 0 ? void 0 : _k.csvJoinColumn,
-        (_l = props.essentiality) === null || _l === void 0 ? void 0 : _l.csvStatusColumn,
+        (_h = props.essentiality) === null || _h === void 0 ? void 0 : _h.csvUrl,
+        (_j = props.essentiality) === null || _j === void 0 ? void 0 : _j.csvJoinColumn,
+        (_k = props.essentiality) === null || _k === void 0 ? void 0 : _k.csvStatusColumn,
     ]);
     // Keep JEXL context up to date (selection + essentiality)
     (0, react_1.useEffect)(() => {
@@ -114,7 +114,7 @@ function GeneViewer(props) {
             essentialityColorMap: (_a = props.essentiality) === null || _a === void 0 ? void 0 : _a.colorMap,
             featureJoinAttribute: joinAttribute,
         });
-    }, [selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, (_m = props.essentiality) === null || _m === void 0 ? void 0 : _m.colorMap]);
+    }, [selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, (_l = props.essentiality) === null || _l === void 0 ? void 0 : _l.colorMap]);
     const assemblyConfig = (0, react_1.useMemo)(() => (0, config_1.buildAssemblyConfig)(props), [props]);
     const tracksConfig = (0, react_1.useMemo)(() => (0, config_1.buildTracksConfig)(props), [props]);
     // Initialize JBrowse view state
@@ -241,7 +241,7 @@ function GeneViewer(props) {
             token.cancelled = true;
             window.clearTimeout(id);
         };
-    }, [visibleRegion === null || visibleRegion === void 0 ? void 0 : visibleRegion.refName, visibleRegion === null || visibleRegion === void 0 ? void 0 : visibleRegion.start, visibleRegion === null || visibleRegion === void 0 ? void 0 : visibleRegion.end, props.annotation.gff.gffUrl, props.annotation.gff.tbiUrl, genesInViewTypes]);
+    }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.tbiUrl, genesInViewTypes]);
     const selectedFeature = (0, react_1.useMemo)(() => {
         var _a;
         if (!selectedGeneId)
@@ -267,11 +267,11 @@ function GeneViewer(props) {
             color: (0, essentiality_1.getColorForEssentiality)(status, (_a = props.essentiality) === null || _a === void 0 ? void 0 : _a.colorMap),
             icon: (0, essentiality_1.getIconForEssentiality)(status),
         };
-    }, [essentialityEnabled, selectedGeneId, essentialityIndex, (_o = props.essentiality) === null || _o === void 0 ? void 0 : _o.colorMap]);
-    const showLegends = (_q = (_p = props.ui) === null || _p === void 0 ? void 0 : _p.showLegends) !== null && _q !== void 0 ? _q : true;
-    const showPanel = (_s = (_r = props.ui) === null || _r === void 0 ? void 0 : _r.showFeaturePanel) !== null && _s !== void 0 ? _s : true;
-    const showTable = (_u = (_t = props.ui) === null || _t === void 0 ? void 0 : _t.showGenesInViewTable) !== null && _u !== void 0 ? _u : true;
-    const heightPx = (_v = props.heightPx) !== null && _v !== void 0 ? _v : 720;
+    }, [essentialityEnabled, selectedGeneId, essentialityIndex, (_m = props.essentiality) === null || _m === void 0 ? void 0 : _m.colorMap]);
+    const showLegends = (_p = (_o = props.ui) === null || _o === void 0 ? void 0 : _o.showLegends) !== null && _p !== void 0 ? _p : true;
+    const showPanel = (_r = (_q = props.ui) === null || _q === void 0 ? void 0 : _q.showFeaturePanel) !== null && _r !== void 0 ? _r : true;
+    const showTable = (_t = (_s = props.ui) === null || _s === void 0 ? void 0 : _s.showGenesInViewTable) !== null && _t !== void 0 ? _t : true;
+    const heightPx = (_u = props.heightPx) !== null && _u !== void 0 ? _u : 720;
     return ((0, jsx_runtime_1.jsxs)("div", { style: { border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? ((0, jsx_runtime_1.jsx)(GeneViewerLegends_1.GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, background: '#fff7ed', borderBottom: '1px solid #fed7aa', color: '#9a3412' }, children: error })) : null, (0, jsx_runtime_1.jsxs)("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? '1fr 360px' : '1fr' }, children: [(0, jsx_runtime_1.jsx)("div", { style: { minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }, children: viewState ? ((0, jsx_runtime_1.jsx)(react_app_1.JBrowseApp, { viewState: viewState })) : ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, color: '#6b7280' }, children: "Loading JBrowse\u2026" })) }), showPanel ? ((0, jsx_runtime_1.jsx)("div", { style: { borderLeft: '1px solid #e5e7eb', minHeight: heightPx, maxHeight: heightPx, overflow: 'auto' }, children: (0, jsx_runtime_1.jsx)(FeaturePanel_1.FeaturePanel, { feature: selectedFeature, essentiality: selectedEssentiality }) })) : null] }), showTable ? ((0, jsx_runtime_1.jsx)(GenesInViewTable_1.GenesInViewTable, { features: genesInView, selectedId: selectedGeneId, onSelect: (id) => setSelectedGeneId(id), joinAttribute: joinAttribute })) : null] }));
 }
 exports.default = GeneViewer;

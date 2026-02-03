@@ -9,19 +9,18 @@ import {createRoot} from "react-dom/client";
 
 type ViewModel = ReturnType<typeof createViewState>;
 
-interface JcvProps {
+export interface JBrowseContigViewerProps {
     genomeMeta: GenomeMeta;
     fileLocations: {
         fasta: string;
         fai: string;
         gzi: string;
     }
-
 }
 
-const Jcv: React.FC<JcvProps> = ({
-                                     genomeMeta, fileLocations
-                                 }) => {
+const JBrowseContigViewer: React.FC<JBrowseContigViewerProps> = ({
+    genomeMeta, fileLocations
+}) => {
     const [viewState, setViewState] = useState<ViewModel | null>(null);
     const assembly = useMemo(() => {
         return getAssembly2(
@@ -33,7 +32,7 @@ const Jcv: React.FC<JcvProps> = ({
     const tracks = useMemo(() => {
         return getTracks(
             genomeMeta,
-             ""
+            ""
         );
     }, [genomeMeta]);
 
@@ -68,7 +67,6 @@ const Jcv: React.FC<JcvProps> = ({
         return null;
     }
 
-
     return (
         <>
             <h1>JBrowse 2 - Loading Large Metagenomes</h1>
@@ -77,8 +75,6 @@ const Jcv: React.FC<JcvProps> = ({
             </div>
         </>
     );
+};
 
-
-}
-
-export default Jcv;
+export default JBrowseContigViewer;

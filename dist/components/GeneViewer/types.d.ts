@@ -42,7 +42,7 @@ export interface EssentialityConfig {
      * This assumes the GFF has `locus_tag=...` attributes.
      */
     featureJoinAttribute?: string;
-    /** CSV column providing the essentiality status (defaults to `essentiality_call`). */
+    /** CSV column providing the essentiality status (defaults to `essentiality`). */
     csvStatusColumn?: string;
     /** Custom color mapping for statuses. */
     colorMap?: EssentialityColorMap;

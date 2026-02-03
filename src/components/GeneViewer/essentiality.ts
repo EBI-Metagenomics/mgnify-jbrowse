@@ -113,7 +113,7 @@ export function buildEssentialityIndexFromCsv(
   },
 ): Map<string, EssentialityCsvRow> {
   const joinColumn = opts?.joinColumn ?? 'locus_tag';
-  const statusColumn = opts?.statusColumn ?? 'essentiality_call';
+  const statusColumn = opts?.statusColumn ?? 'essentiality';
 
   const rows = parseCsv(csvText);
   if (rows.length === 0) return new Map();

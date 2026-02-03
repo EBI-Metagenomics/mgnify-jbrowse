@@ -15,7 +15,7 @@ function App() {
     const ixUrl = process.env.REACT_APP_GFF_IX_URL || undefined;
     const ixxUrl = process.env.REACT_APP_GFF_IXX_URL || undefined;
     const metaUrl = process.env.REACT_APP_GFF_META_URL || undefined;
-    const essentialityCsvUrl = process.env.REACT_APP_ESSENTIALITY_CSV_URL || undefined;
+    const essentialityCsvUrl = process.env.REACT_APP_ESSENTIALITY_CSV_URL || "/essentiality/essentiality_sample.csv";
     if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !tbiUrl) {
         return ((0, jsx_runtime_1.jsxs)("div", { style: { padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }, children: [(0, jsx_runtime_1.jsx)("h2", { style: { marginTop: 0 }, children: "MGnify JBrowse GeneViewer demo" }), (0, jsx_runtime_1.jsx)("p", { children: "Set the following environment variables to run the demo:" }), (0, jsx_runtime_1.jsx)("pre", { style: { background: "#f3f4f6", padding: 12, borderRadius: 8, overflow: "auto" }, children: `REACT_APP_ASSEMBLY_NAME=your_assembly_name
 REACT_APP_FASTA_GZ_URL=https://.../genome.fasta.gz
@@ -36,10 +36,10 @@ REACT_APP_GFF_META_URL=https://.../annotations.gff.bgz_meta.json` })] }));
                     name: "Structural Annotation",
                     gff: { gffUrl, tbiUrl, ixUrl, ixxUrl, metaUrl },
                 }, essentiality: {
-                    enabled: !!essentialityCsvUrl,
+                    enabled: true,
                     csvUrl: essentialityCsvUrl,
                     csvJoinColumn: "locus_tag",
-                    csvStatusColumn: "essentiality_call",
+                    csvStatusColumn: "essentiality",
                     featureJoinAttribute: "locus_tag",
                 }, ui: {
                     showLegends: true,
