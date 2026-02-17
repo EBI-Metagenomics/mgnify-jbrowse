@@ -1,6 +1,6 @@
 import "@fontsource/roboto";
 import React from "react";
-import { GeneViewer } from "./index";
+import { GeneViewer } from "./components/GeneViewer";
 
 export default function App() {
   // For the demo app, configure URLs via env vars.

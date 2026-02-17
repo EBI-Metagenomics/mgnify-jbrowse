@@ -13,6 +13,13 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
   const region = view?.displayedRegions?.[0];
   if (!view || !region) return null;
 
+  // JBrowse views expose `initialized`; accessing layout-dependent props like
+  // `width` before initialization can throw (e.g. "width undefined, make sure
+  // to check for model.initialized"). Bail out until the view is ready.
+  if (view.initialized === false) {
+    return null;
+  }
+
   const refName: string | undefined = region.refName;
   if (!refName) return null;
 
