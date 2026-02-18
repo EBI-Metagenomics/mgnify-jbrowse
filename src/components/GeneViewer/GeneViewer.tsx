@@ -267,20 +267,36 @@ export default function GeneViewer(props: GeneViewerProps) {
     const session: any = viewState.session;
     if (!session) return;
 
+    const getAttrFromFeature = (feature: any, key: string): unknown => {
+      if (!feature) return undefined;
+      if (typeof feature.get === 'function') {
+        const direct = feature.get(key);
+        if (direct != null && direct !== '') return direct;
+        const attrs = feature.get('attributes');
+        if (attrs && typeof attrs === 'object' && key in attrs) return (attrs as any)[key];
+      }
+      const data = (feature as any).data ?? feature;
+      if (data && typeof data === 'object') {
+        if (key in data && (data as any)[key] != null && (data as any)[key] !== '') {
+          return (data as any)[key];
+        }
+        const attrs = (data as any).attributes;
+        if (attrs && typeof attrs === 'object' && key in attrs) return (attrs as any)[key];
+      }
+      return undefined;
+    };
+
     const getLocusFromSelection = (): string | null => {
       const sel = session.selection;
       if (!sel) return null;
       const feature = sel.feature ?? sel;
       if (!feature) return null;
       const joinAttr = props.essentiality?.featureJoinAttribute ?? 'locus_tag';
-      let val: unknown;
-      if (typeof feature.get === 'function') {
-        val = feature.get(joinAttr) ?? feature.get('locus_tag') ?? feature.get('ID') ?? feature.get('id');
-      } else {
-        const data = feature.data ?? feature;
-        const attrs = data?.attributes ?? data;
-        val = attrs?.[joinAttr] ?? attrs?.locus_tag ?? attrs?.ID ?? data?.locus_tag ?? data?.id;
-      }
+      const val =
+        getAttrFromFeature(feature, joinAttr) ??
+        getAttrFromFeature(feature, 'locus_tag') ??
+        getAttrFromFeature(feature, 'ID') ??
+        getAttrFromFeature(feature, 'id');
       const s = val != null ? String(val).trim() : '';
       return s || null;
     };
@@ -337,9 +353,8 @@ export default function GeneViewer(props: GeneViewerProps) {
     }
   }, [viewState, selectedLocusTag, selectedGeneId, essentialityIndex, essentialityEnabled]);
 
-  // When user selects a gene from the table, navigate JBrowse to that gene using navToLocString.
+  // When user selects a gene from the table, gently center that gene in the current view.
   // Only run once per table click: after nav, session selection can change and would retrigger and jump again.
-  // Use the view's current refName so we match the assembly's ref naming (avoids wrong-scaffold jump).
   useEffect(() => {
     if (!viewState || !selectedFeature) return;
     if (Date.now() - lastTableSelectionTimeRef.current >= 800) return;
@@ -350,29 +365,15 @@ export default function GeneViewer(props: GeneViewerProps) {
 
     try {
       hasNavigatedThisTableClickRef.current = true;
-      // Use refName from the view's displayed region so it matches assembly (avoids "hundreds of genes forward" wrong ref).
-      const region = view.displayedRegions?.[0];
-      const refName = region?.refName ?? selectedFeature.refName;
-      // Location string: refName:start..end (1-based inclusive). GffFeature has 0-based start, end = 1-based end.
-      const start1 = selectedFeature.start + 1;
-      const end1 = selectedFeature.end;
-      const locString = `${refName}:${start1}..${end1}`;
-      if (typeof view.navToLocString === 'function') {
-        view.navToLocString(locString, props.assembly.name);
+      const midBp = Math.round((selectedFeature.start + selectedFeature.end) / 2);
+      const refName = selectedFeature.refName;
+      if (typeof (view as any).centerAt === 'function') {
+        (view as any).centerAt(midBp, refName, 0);
       }
-      const zoomBpPerPx = 80;
-      const t = window.setTimeout(() => {
-        try {
-          if (typeof view.zoomTo === 'function') view.zoomTo(zoomBpPerPx);
-        } catch {
-          // ignore
-        }
-      }, 200);
-      return () => window.clearTimeout(t);
     } catch {
       hasNavigatedThisTableClickRef.current = false;
     }
-  }, [viewState, selectedFeature, props.assembly.name]);
+  }, [viewState, selectedFeature]);
 
   const assemblyConfig = useMemo(() => buildAssemblyConfig(props), [props]);
   const tracksConfig = useMemo(() => buildTracksConfig(props), [props]);
@@ -641,7 +642,7 @@ export default function GeneViewer(props: GeneViewerProps) {
         Selected: {selectedLocusTag ?? '—'} (genes in view: {genesInView.length})
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: showPanel ? '1fr 360px' : '1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: showPanel ? '1fr 380px' : '1fr' }}>
         <div
           ref={jbrowseContainerRef}
           style={{ minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }}
@@ -654,23 +655,34 @@ export default function GeneViewer(props: GeneViewerProps) {
         </div>
 
         {showPanel ? (
-          <div style={{ borderLeft: '1px solid #e5e7eb', minHeight: heightPx, maxHeight: heightPx, overflow: 'auto' }}>
+          <div
+            style={{
+              borderLeft: '1px solid #e5e7eb',
+              minHeight: heightPx,
+              overflow: 'visible',
+            }}
+          >
             <FeaturePanel feature={selectedFeature} essentiality={selectedEssentiality} />
           </div>
         ) : null}
       </div>
 
       {showTable ? (
-        <GenesInViewTable
-          features={genesInView}
-          selectedId={selectedLocusTag}
-          onSelect={(id) => {
-            lastTableSelectionTimeRef.current = Date.now();
-            hasNavigatedThisTableClickRef.current = false;
-            setSelectedGeneId(id);
-          }}
-          joinAttribute={joinAttribute}
-        />
+        <div style={{ display: 'grid', gridTemplateColumns: showPanel ? '1fr 380px' : '1fr' }}>
+          <div>
+            <GenesInViewTable
+              features={genesInView}
+              selectedId={selectedLocusTag}
+              onSelect={(id) => {
+                lastTableSelectionTimeRef.current = Date.now();
+                hasNavigatedThisTableClickRef.current = false;
+                setSelectedGeneId(id);
+              }}
+              joinAttribute={joinAttribute}
+            />
+          </div>
+          {showPanel ? <div /> : null}
+        </div>
       ) : null}
     </div>
   );

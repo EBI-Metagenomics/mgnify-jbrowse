@@ -62,7 +62,7 @@ export function FeaturePanel(props: {
       <div style={{ marginTop: 14, fontWeight: 700, marginBottom: 6, fontSize: 12 }}>
         Attributes
       </div>
-      <div style={{ maxHeight: 280, overflow: 'auto', border: '1px solid #e5e7eb', borderRadius: 6 }}>
+      <div style={{ border: '1px solid #e5e7eb', borderRadius: 6 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <tbody>
             {Object.entries(attrs).map(([k, v]) => (
