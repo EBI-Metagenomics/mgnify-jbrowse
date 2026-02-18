@@ -12,22 +12,30 @@
   "dependencies": {
     "@fontsource/roboto": "^4.5.5",
     "@gmod/bgzf-filehandle": "^2.0.4",
-    "@jbrowse/plugin-sequence": "^3.0.5",
-    "@jbrowse/react-app": "^2.0.0",
+    "@gmod/tabix": "^1.0.3",
+    "@jbrowse/core": "^3.5.1",
+    "@jbrowse/plugin-linear-genome-view": "^3.5.1",
+    "@jbrowse/product-core": "^3.5.1",
+    "@jbrowse/react-app2": "^3.5.1",
+    "@jbrowse/sv-core": "^3.5.0",
+    "@mui/material": "^5.0.0",
     "@mui/system": "^5.0.0",
+    "buffer": "^6.0.3",
+    "generic-filehandle": "^3.0.6",
     "pako": "^2.1.0",
-    "react-draggable": "^4.4.5"
+    "react-draggable": "^4.4.5",
+    "reselect": "^5.1.1"
   },
   "peerDependencies": {
-    "@jbrowse/sv-core": "^2.16.0",
+    "@jbrowse/sv-core": "^3.5.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
   "scripts": {
-    "start": "node node_modules/react-scripts/bin/react-scripts.js start",
-    "build:app": "node node_modules/react-scripts/bin/react-scripts.js build",
-    "test": "node node_modules/react-scripts/bin/react-scripts.js test",
-    "eject": "node node_modules/react-scripts/bin/react-scripts.js eject",
+    "start": "vite",
+    "build:app": "vite build",
+    "preview": "vite preview",
+    "test": "jest",
     "predeploy": "npm run build:app",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/demos/app-cra5/",
     "postdeploy": "AWS_PAGER=\"\" aws cloudfront  create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/app-cra5/*\"",
@@ -65,10 +73,11 @@
     "@types/pako": "^2.0.3",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
+    "@vitejs/plugin-react": "^4.6.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-scripts": "5.0.1",
     "typescript": "^4.9.5",
+    "vite": "^7.3.1",
     "web-vitals": "^3.3.1"
   }
 }

@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {createViewState} from '@jbrowse/react-app';
-import {createRoot} from 'react-dom/client';
+import {createViewState} from '@jbrowse/react-app2';
+import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance';
 import {Track} from "../../interfaces/Track";
 
 
@@ -31,7 +31,7 @@ const useGeneViewerState = (
 
             const state = createViewState({
                 config,
-                createRootFn: createRoot,
+                makeWorkerInstance,
             });
 
             setViewState(state);

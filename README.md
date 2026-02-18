@@ -19,17 +19,17 @@ npm install
 npm start
 ```
 
-The app reads URLs from `.env.local` (or env vars). Ensure:
+The app reads URLs from `.env.local` (or env vars). Use `VITE_` prefix (same as METT dataportal). See `.env.example`. Ensure:
 
 - FASTA, FAI, GZI, GFF, and TBI URLs point to reachable files.
-- With CRA, files in `public/` are served at the root (e.g. `http://localhost:3000/essentiality/essentiality_sample.csv`).
+- With Vite, files in `public/` are served at the root (e.g. `http://localhost:5173/essentiality/essentiality_sample.csv`).
 - If you use `localhost:3001` for data, run a separate static server, e.g.:
 
 ```bash
 npx serve public -p 3001
 ```
 
-Then run the app in another terminal: `npm start` (serves on 3000).
+Then run the app in another terminal: `npm start` (Vite serves on 5173 by default).
 
 ### 2. As a component in another app
 
@@ -163,23 +163,23 @@ uniformis,solid,gene,BU_ATCC8492_00001,essential
 uniformis,liquid,gene,BU_ATCC8492_00002,not_essential
 ```
 
-### Demo app configuration (CRA)
+### Demo app configuration (Vite)
 
-The included demo app reads URLs from env vars:
+The included demo app reads URLs from env vars (same as METT dataportal). Use `VITE_` prefix. See `.env.example`:
 
 ```bash
-REACT_APP_ASSEMBLY_NAME=your_assembly_name
-REACT_APP_FASTA_GZ_URL=https://.../genome.fasta.gz
-REACT_APP_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
-REACT_APP_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
-REACT_APP_GFF_BGZ_URL=https://.../annotations.gff.bgz
-REACT_APP_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
+VITE_ASSEMBLY_NAME=your_assembly_name
+VITE_FASTA_GZ_URL=https://.../genome.fasta.gz
+VITE_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
+VITE_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
+VITE_GFF_BGZ_URL=https://.../annotations.gff.bgz
+VITE_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
 
 # Optional (defaults to public/essentiality/essentiality_sample.csv):
-REACT_APP_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
-REACT_APP_GFF_IX_URL=https://.../annotations.gff.bgz.ix
-REACT_APP_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx
-REACT_APP_GFF_META_URL=https://.../annotations.gff.bgz_meta.json
+VITE_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
+VITE_GFF_IX_URL=https://.../annotations.gff.bgz.ix
+VITE_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx
+VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json
 ```
 
 ### Generate Indexes

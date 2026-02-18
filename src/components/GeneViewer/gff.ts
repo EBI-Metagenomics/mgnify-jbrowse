@@ -69,7 +69,7 @@ export async function queryGffRegion(opts: {
   const wantedTypes = opts.featureTypes?.length ? new Set(opts.featureTypes) : null;
   const features: GffFeature[] = [];
 
-  await file.getLines(opts.refName, opts.start, opts.end, (line) => {
+  await file.getLines(opts.refName, opts.start, opts.end, (line: string) => {
     if (!line || line.startsWith('#')) return;
     const parts = line.split('\t');
     if (parts.length < 9) return;

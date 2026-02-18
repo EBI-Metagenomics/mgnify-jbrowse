@@ -24,6 +24,12 @@ export declare function buildDefaultSessionConfig(opts: {
     initialRefName: string;
     initialEnd: number;
     initialStart?: number;
+    /** Pass the gene track from buildTracksConfig so session uses same displays (with JEXL color1/labels). Like METT: displays: track.displays */
+    geneTrackConfig?: {
+        trackId: string;
+        type: string;
+        displays: any[];
+    };
 }): {
     name: string;
     widgets: {
@@ -39,7 +45,6 @@ export declare function buildDefaultSessionConfig(opts: {
                 disable: boolean;
                 hidden: boolean;
             };
-            onFeatureClick: null;
         };
         displayedRegions: {
             refName: string;
@@ -60,19 +65,15 @@ export declare function buildDefaultSessionConfig(opts: {
                 showTranslation: boolean;
                 showLabels: boolean;
             }[];
+            id?: undefined;
+            visible?: undefined;
         } | {
+            id: string;
             type: string;
             configuration: string;
-            displays: {
-                id: string;
-                type: string;
-                rendererTypeName: string;
-                renderer: {
-                    type: string;
-                };
-                height: number;
-            }[];
-            minimized?: undefined;
+            minimized: boolean;
+            visible: boolean;
+            displays: any[];
         })[];
     }[];
 };

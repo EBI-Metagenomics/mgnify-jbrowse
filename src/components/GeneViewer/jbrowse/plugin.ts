@@ -1,6 +1,10 @@
 import Plugin from '@jbrowse/core/Plugin';
 import type PluginManager from '@jbrowse/core/PluginManager';
+import { AdapterType } from '@jbrowse/core/pluggableElementTypes';
 
+import Gff3TabixWithEssentialityAdapter, {
+  configSchema as Gff3TabixWithEssentialityConfigSchema,
+} from './Gff3TabixWithEssentialityAdapter';
 import type { EssentialityColorMap, EssentialityStatus } from '../types';
 import {
   DEFAULT_ESSENTIALITY_COLOR_MAP,
@@ -31,36 +35,97 @@ const ctx: GeneViewerJexlContext = {
   highlightColor: DEFAULT_HIGHLIGHT_COLOR,
 };
 
+// Debug counter so we don't spam the console from JEXL
+let debugGeneColorCount = 0;
+
+/** Same as METT: JEXL reads window.selectedGeneId so highlight works regardless of React lifecycle. */
+declare global {
+  interface Window {
+    selectedGeneId?: string | null;
+  }
+}
+
 export function setGeneViewerJexlContext(partial: Partial<GeneViewerJexlContext>) {
   Object.assign(ctx, partial);
+  if (typeof window !== 'undefined' && partial.selectedGeneId !== undefined) {
+    window.selectedGeneId = partial.selectedGeneId;
+  }
+}
+
+/** Selected gene ID for JEXL (match METT: read from window.selectedGeneId first). */
+function getSelectedGeneId(): string | null {
+  if (typeof window !== 'undefined' && window.selectedGeneId != null && window.selectedGeneId !== '') {
+    const s = String(window.selectedGeneId).trim();
+    if (s) return s;
+  }
+  return ctx.selectedGeneId ? String(ctx.selectedGeneId).trim() : null;
 }
 
 function getFeatureValue(feature: any, key: string): unknown {
   if (!feature) return undefined;
-  // JBrowse SimpleFeature: get(name) returns this.data[name]. GFF often has attributes in data.attributes.
+  // JBrowse SimpleFeature: get(name) returns this.data[name]. Gff3TabixAdapter puts GFF attributes at top level (lowercased).
   if (typeof feature.get === 'function') {
     const v = feature.get(key);
     if (v != null && v !== '') return v;
+    const lower = key.toLowerCase();
+    if (lower !== key) {
+      const vLower = feature.get(lower);
+      if (vLower != null && vLower !== '') return vLower;
+    }
     const attrs = feature.get('attributes');
-    if (attrs && typeof attrs === 'object' && key in attrs) return attrs[key];
+    if (attrs && typeof attrs === 'object' && key in attrs) return (attrs as Record<string, unknown>)[key];
+    if (attrs && typeof attrs === 'object' && lower in attrs) return (attrs as Record<string, unknown>)[lower];
   }
   const data = feature?.data ?? feature;
   if (data && typeof data === 'object') {
-    if (key in data && data[key] != null && data[key] !== '') return data[key];
-    const attrs = data.attributes;
+    const d = data as Record<string, unknown>;
+    if (key in d && d[key] != null && d[key] !== '') return d[key];
+    if (key.toLowerCase() in d && d[key.toLowerCase()] != null && d[key.toLowerCase()] !== '') return d[key.toLowerCase()];
+    const attrs = d.attributes as Record<string, unknown> | undefined;
     if (attrs && typeof attrs === 'object' && key in attrs) return attrs[key];
+    if (attrs && typeof attrs === 'object' && key.toLowerCase() in attrs) return attrs[key.toLowerCase()];
   }
   return undefined;
+}
+
+/** Get locus_tag from feature or any parent (for CDS/mRNA that inherit from gene). */
+function getLocusTagFromFeature(feature: any): string {
+  let f: any = feature;
+  while (f) {
+    const v = getFeatureValue(f, ctx.featureJoinAttribute || 'locus_tag');
+    if (v != null && v !== '') return String(v).trim();
+    const id = getFeatureValue(f, 'ID') ?? getFeatureValue(f, 'id');
+    if (id != null && id !== '') {
+      const idStr = String(id).trim();
+      // GFF IDs like "CDS:BU_ATCC8492_00001" or "transcript:BU_ATCC8492_00001" - locus is after colon
+      if (idStr.includes(':')) {
+        const part = idStr.split(':').pop();
+        if (part) return part;
+      }
+      return idStr;
+    }
+    f = typeof f.parent === 'function' ? f.parent() : null;
+  }
+  return '';
 }
 
 export default class GeneViewerJBrowsePlugin extends Plugin {
   name = 'GeneViewerJBrowsePlugin';
 
   install(pluginManager: PluginManager) {
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'Gff3TabixWithEssentialityAdapter',
+          displayName: 'GFF3 tabix with essentiality',
+          configSchema: Gff3TabixWithEssentialityConfigSchema,
+          getAdapterClass: () =>
+            import('./Gff3TabixWithEssentialityAdapter').then((r) => r.default),
+        }),
+    );
+
     const resolveEssentialityStatus = (feature: any): EssentialityStatus => {
-      const joinAttr = ctx.featureJoinAttribute || 'locus_tag';
-      const featureIdRaw = getFeatureValue(feature, joinAttr);
-      const featureId = featureIdRaw != null ? String(featureIdRaw) : null;
+      const featureId = getLocusTagFromFeature(feature) || null;
 
       const statusFromFeature = getFeatureValue(feature, 'Essentiality');
       if (statusFromFeature) {
@@ -81,7 +146,7 @@ export default class GeneViewerJBrowsePlugin extends Plugin {
         getColorForEssentiality(normalizeEssentialityStatus(essentiality), ctx.essentialityColorMap),
     );
 
-    pluginManager.jexl.addFunction('selectedGeneId', () => ctx.selectedGeneId);
+    pluginManager.jexl.addFunction('selectedGeneId', () => getSelectedGeneId());
 
     pluginManager.jexl.addFunction('getEssentialityStatus', (feature: any) =>
       resolveEssentialityStatus(feature),
@@ -91,19 +156,42 @@ export default class GeneViewerJBrowsePlugin extends Plugin {
       ctx.essentialityEnabled ? getIconForEssentiality(resolveEssentialityStatus(feature)) : '',
     );
 
+    // Match METT: getGeneColor reads window.selectedGeneId and feature locus_tag; essentiality from feature or index
     pluginManager.jexl.addFunction('getGeneColor', (feature: any) => {
-      const joinAttr = ctx.featureJoinAttribute || 'locus_tag';
-      const selected = ctx.selectedGeneId ? String(ctx.selectedGeneId).trim() : null;
-      if (selected) {
-        const locus = getFeatureValue(feature, joinAttr);
-        const id = getFeatureValue(feature, 'ID');
-        const locusStr = locus != null ? String(locus).trim() : '';
-        const idStr = id != null ? String(id).trim() : '';
-        if (locusStr === selected || idStr === selected) return ctx.highlightColor;
-      }
+      try {
+        const selectedId = getSelectedGeneId();
+        if (selectedId) {
+          // METT-style: feature?.locus_tag ?? feature?.get?.('locus_tag'); also check parents and ID formats
+          const locusStr = getLocusTagFromFeature(feature);
+          const idRaw = getFeatureValue(feature, 'ID') ?? getFeatureValue(feature, 'id');
+          const idStr = idRaw != null ? String(idRaw).trim() : '';
+          const isMatch =
+            locusStr === selectedId ||
+            idStr === selectedId ||
+            (idStr.includes(':') && idStr.split(':').pop() === selectedId);
 
-      const status = resolveEssentialityStatus(feature);
-      return getColorForEssentiality(status, ctx.essentialityColorMap);
+          if (debugGeneColorCount < 20) {
+            // eslint-disable-next-line no-console
+            console.log('[GeneViewer JEXL:getGeneColor]', {
+              selectedId,
+              locusStr,
+              idStr,
+              isMatch,
+            });
+            debugGeneColorCount += 1;
+          }
+
+          if (isMatch) {
+            return ctx.highlightColor;
+          }
+        }
+
+        // Essentiality: METT has it on feature (Essentiality); we use essentialityIndex when not on feature
+        const status = resolveEssentialityStatus(feature);
+        return getColorForEssentiality(status, ctx.essentialityColorMap);
+      } catch (e) {
+        return DEFAULT_ESSENTIALITY_COLOR_MAP.unknown ?? '#DAA520';
+      }
     });
   }
 }

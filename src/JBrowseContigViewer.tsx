@@ -1,11 +1,11 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {createViewState, JBrowseApp} from "@jbrowse/react-app";
+import {createViewState, JBrowseApp} from "@jbrowse/react-app2";
+import makeWorkerInstance from "@jbrowse/react-app2/esm/makeWorkerInstance";
 import "@fontsource/roboto";
 import {getAssembly2} from "./components/GenomeViewer/assembly";
 import getDefaultSessionConfig from "./components/GenomeViewer/defaultSessionConfig";
 import getTracks from "./components/GenomeViewer/tracks";
 import {GenomeMeta} from "./interfaces/Genome";
-import {createRoot} from "react-dom/client";
 
 type ViewModel = ReturnType<typeof createViewState>;
 
@@ -58,7 +58,7 @@ const JBrowseContigViewer: React.FC<JBrowseContigViewerProps> = ({
         console.log("Initializing JBrowse");
         const state = createViewState({
             config,
-            createRootFn: createRoot,
+            makeWorkerInstance,
         });
         setViewState(state);
     }, [config]);
@@ -69,7 +69,7 @@ const JBrowseContigViewer: React.FC<JBrowseContigViewerProps> = ({
 
     return (
         <>
-            <h1>JBrowse 2 - Loading Large Metagenomes</h1>
+            <h1>JMGnify JBrowse Contig Viewer</h1>
             <div>
                 <JBrowseApp viewState={viewState}/>
             </div>

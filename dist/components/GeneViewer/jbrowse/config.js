@@ -19,7 +19,7 @@ function buildAssemblyConfig(props) {
 }
 exports.buildAssemblyConfig = buildAssemblyConfig;
 function buildTracksConfig(props) {
-    var _a;
+    var _a, _b, _c, _d;
     const { assembly, annotation, essentiality } = props;
     const gff = annotation.gff;
     const labelFields = [
@@ -33,18 +33,24 @@ function buildTracksConfig(props) {
     const labelWithEss = showEssentiality
         ? `${labelJexl} + ' ' + getEssentialityIcon(feature)`
         : labelJexl;
+    // Always use Gff3TabixWithEssentialityAdapter: provides locus_tag as feature id (METT-style) for click handling
+    const adapterConfig = {
+        type: 'Gff3TabixWithEssentialityAdapter',
+        gffGzLocation: { uri: gff.gffUrl },
+        index: { location: { uri: gff.tbiUrl } },
+        essentialityCsvUrl: showEssentiality && (essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvUrl) ? essentiality.csvUrl : '',
+        csvJoinColumn: (_a = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvJoinColumn) !== null && _a !== void 0 ? _a : 'locus_tag',
+        csvStatusColumn: (_b = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvStatusColumn) !== null && _b !== void 0 ? _b : 'essentiality',
+        featureJoinAttribute: (_c = essentiality === null || essentiality === void 0 ? void 0 : essentiality.featureJoinAttribute) !== null && _c !== void 0 ? _c : 'locus_tag',
+    };
     const tracks = [
         {
             type: 'FeatureTrack',
             trackId: 'gene_features',
-            name: (_a = annotation.name) !== null && _a !== void 0 ? _a : 'Genes',
+            name: (_d = annotation.name) !== null && _d !== void 0 ? _d : 'Genes',
             assemblyNames: [assembly.name],
             category: ['Annotations'],
-            adapter: {
-                type: 'Gff3TabixAdapter',
-                gffGzLocation: { uri: gff.gffUrl },
-                index: { location: { uri: gff.tbiUrl } },
-            },
+            adapter: adapterConfig,
             ...(gff.ixUrl && gff.ixxUrl
                 ? {
                     textSearching: {
@@ -63,17 +69,19 @@ function buildTracksConfig(props) {
             displays: [
                 {
                     displayId: 'gene_features-LinearBasicDisplay',
+                    id: 'gene_features-LinearBasicDisplay',
                     type: 'LinearBasicDisplay',
-                    rendererTypeName: 'SvgFeatureRenderer',
+                    height: 280,
+                    // Let JBrowse handle clicks -> session.setSelection(feature); we sync via poll
                     renderer: {
                         type: 'SvgFeatureRenderer',
-                        // Dynamic coloring supports selection highlight + essentiality
+                        // METT-style: jexl:getGeneColor(feature) for highlight + essentiality
                         color1: 'jexl:getGeneColor(feature)',
+                        color2: 'jexl:getGeneColor(feature)',
                         labels: {
                             name: 'jexl:' + labelWithEss,
                         },
                     },
-                    height: 280,
                 },
             ],
             visible: true,
@@ -83,12 +91,12 @@ function buildTracksConfig(props) {
 }
 exports.buildTracksConfig = buildTracksConfig;
 function buildDefaultSessionConfig(opts) {
-    var _a;
+    var _a, _b, _c, _d;
     const start = (_a = opts.initialStart) !== null && _a !== void 0 ? _a : 0;
     const end = Math.max(start + 1, opts.initialEnd);
+    const geneTrack = opts.geneTrackConfig;
     return {
         name: 'Gene Viewer session',
-        // Disable JBrowse's built-in feature detail drawer so we use our custom panel only (like METT)
         widgets: {
             BaseFeatureWidget: { type: 'BaseFeatureWidget', disabled: true },
         },
@@ -97,7 +105,7 @@ function buildDefaultSessionConfig(opts) {
                 type: 'LinearGenomeView',
                 configuration: {
                     header: { disable: true, hidden: true },
-                    onFeatureClick: null,
+                    // Let JBrowse set session.selection on click; we sync to panel/table via poll
                 },
                 displayedRegions: [
                     {
@@ -125,15 +133,23 @@ function buildDefaultSessionConfig(opts) {
                         ],
                     },
                     {
+                        id: (_b = geneTrack === null || geneTrack === void 0 ? void 0 : geneTrack.trackId) !== null && _b !== void 0 ? _b : 'gene_features',
                         type: 'FeatureTrack',
-                        configuration: 'gene_features',
-                        displays: [
+                        configuration: (_c = geneTrack === null || geneTrack === void 0 ? void 0 : geneTrack.trackId) !== null && _c !== void 0 ? _c : 'gene_features',
+                        minimized: false,
+                        visible: true,
+                        // Use full track displays (with renderer color1 + labels JEXL) so highlight and essentiality colors apply. Match METT: displays: track.displays
+                        displays: (_d = geneTrack === null || geneTrack === void 0 ? void 0 : geneTrack.displays) !== null && _d !== void 0 ? _d : [
                             {
+                                displayId: 'gene_features-LinearBasicDisplay',
                                 id: 'gene_features-LinearBasicDisplay',
                                 type: 'LinearBasicDisplay',
-                                rendererTypeName: 'SvgFeatureRenderer',
-                                renderer: { type: 'SvgFeatureRenderer' },
                                 height: 280,
+                                renderer: {
+                                    type: 'SvgFeatureRenderer',
+                                    color1: 'jexl:getGeneColor(feature)',
+                                    color2: 'jexl:getGeneColor(feature)',
+                                },
                             },
                         ],
                     },

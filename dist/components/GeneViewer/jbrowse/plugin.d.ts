@@ -10,6 +10,12 @@ interface GeneViewerJexlContext {
     featureJoinAttribute: string;
     highlightColor: string;
 }
+/** Same as METT: JEXL reads window.selectedGeneId so highlight works regardless of React lifecycle. */
+declare global {
+    interface Window {
+        selectedGeneId?: string | null;
+    }
+}
 export declare function setGeneViewerJexlContext(partial: Partial<GeneViewerJexlContext>): void;
 export default class GeneViewerJBrowsePlugin extends Plugin {
     name: string;

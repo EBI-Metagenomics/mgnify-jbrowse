@@ -34,6 +34,17 @@ export function buildTracksConfig(props: GeneViewerProps) {
     ? `${labelJexl} + ' ' + getEssentialityIcon(feature)`
     : labelJexl;
 
+  // Always use Gff3TabixWithEssentialityAdapter: provides locus_tag as feature id (METT-style) for click handling
+  const adapterConfig = {
+    type: 'Gff3TabixWithEssentialityAdapter' as const,
+    gffGzLocation: { uri: gff.gffUrl },
+    index: { location: { uri: gff.tbiUrl } },
+    essentialityCsvUrl: showEssentiality && essentiality?.csvUrl ? essentiality.csvUrl : '',
+    csvJoinColumn: essentiality?.csvJoinColumn ?? 'locus_tag',
+    csvStatusColumn: essentiality?.csvStatusColumn ?? 'essentiality',
+    featureJoinAttribute: essentiality?.featureJoinAttribute ?? 'locus_tag',
+  };
+
   const tracks: any[] = [
     {
       type: 'FeatureTrack',
@@ -41,11 +52,7 @@ export function buildTracksConfig(props: GeneViewerProps) {
       name: annotation.name ?? 'Genes',
       assemblyNames: [assembly.name],
       category: ['Annotations'],
-      adapter: {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: { uri: gff.gffUrl },
-        index: { location: { uri: gff.tbiUrl } },
-      },
+      adapter: adapterConfig,
       ...(gff.ixUrl && gff.ixxUrl
         ? {
             textSearching: {
@@ -64,17 +71,19 @@ export function buildTracksConfig(props: GeneViewerProps) {
       displays: [
         {
           displayId: 'gene_features-LinearBasicDisplay',
+          id: 'gene_features-LinearBasicDisplay',
           type: 'LinearBasicDisplay',
-          rendererTypeName: 'SvgFeatureRenderer',
+          height: 280,
+          // Let JBrowse handle clicks -> session.setSelection(feature); we sync via poll
           renderer: {
             type: 'SvgFeatureRenderer',
-            // Dynamic coloring supports selection highlight + essentiality
+            // METT-style: jexl:getGeneColor(feature) for highlight + essentiality
             color1: 'jexl:getGeneColor(feature)',
+            color2: 'jexl:getGeneColor(feature)',
             labels: {
               name: 'jexl:' + labelWithEss,
             },
           },
-          height: 280,
         },
       ],
       visible: true,
@@ -89,13 +98,15 @@ export function buildDefaultSessionConfig(opts: {
   initialRefName: string;
   initialEnd: number;
   initialStart?: number;
+  /** Pass the gene track from buildTracksConfig so session uses same displays (with JEXL color1/labels). Like METT: displays: track.displays */
+  geneTrackConfig?: { trackId: string; type: string; displays: any[] };
 }) {
   const start = opts.initialStart ?? 0;
   const end = Math.max(start + 1, opts.initialEnd);
+  const geneTrack = opts.geneTrackConfig;
 
   return {
     name: 'Gene Viewer session',
-    // Disable JBrowse's built-in feature detail drawer so we use our custom panel only (like METT)
     widgets: {
       BaseFeatureWidget: { type: 'BaseFeatureWidget', disabled: true },
     },
@@ -104,7 +115,7 @@ export function buildDefaultSessionConfig(opts: {
         type: 'LinearGenomeView',
         configuration: {
           header: { disable: true, hidden: true },
-          onFeatureClick: null,
+          // Let JBrowse set session.selection on click; we sync to panel/table via poll
         },
         displayedRegions: [
           {
@@ -132,18 +143,23 @@ export function buildDefaultSessionConfig(opts: {
             ],
           },
           {
+            id: geneTrack?.trackId ?? 'gene_features',
             type: 'FeatureTrack',
-            configuration: 'gene_features',
-            displays: [
+            configuration: geneTrack?.trackId ?? 'gene_features',
+            minimized: false,
+            visible: true,
+            // Use full track displays (with renderer color1 + labels JEXL) so highlight and essentiality colors apply. Match METT: displays: track.displays
+            displays: geneTrack?.displays ?? [
               {
+                displayId: 'gene_features-LinearBasicDisplay',
                 id: 'gene_features-LinearBasicDisplay',
                 type: 'LinearBasicDisplay',
-                rendererTypeName: 'SvgFeatureRenderer',
+                height: 280,
                 renderer: {
                   type: 'SvgFeatureRenderer',
                   color1: 'jexl:getGeneColor(feature)',
+                  color2: 'jexl:getGeneColor(feature)',
                 },
-                height: 280,
               },
             ],
           },
