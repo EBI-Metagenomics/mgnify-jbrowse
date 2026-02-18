@@ -37,9 +37,20 @@ export function setGeneViewerJexlContext(partial: Partial<GeneViewerJexlContext>
 
 function getFeatureValue(feature: any, key: string): unknown {
   if (!feature) return undefined;
-  // JBrowse SimpleFeature supports get()
-  if (typeof feature.get === 'function') return feature.get(key);
-  return feature[key];
+  // JBrowse SimpleFeature: get(name) returns this.data[name]. GFF often has attributes in data.attributes.
+  if (typeof feature.get === 'function') {
+    const v = feature.get(key);
+    if (v != null && v !== '') return v;
+    const attrs = feature.get('attributes');
+    if (attrs && typeof attrs === 'object' && key in attrs) return attrs[key];
+  }
+  const data = feature?.data ?? feature;
+  if (data && typeof data === 'object') {
+    if (key in data && data[key] != null && data[key] !== '') return data[key];
+    const attrs = data.attributes;
+    if (attrs && typeof attrs === 'object' && key in attrs) return attrs[key];
+  }
+  return undefined;
 }
 
 export default class GeneViewerJBrowsePlugin extends Plugin {
@@ -82,11 +93,13 @@ export default class GeneViewerJBrowsePlugin extends Plugin {
 
     pluginManager.jexl.addFunction('getGeneColor', (feature: any) => {
       const joinAttr = ctx.featureJoinAttribute || 'locus_tag';
-      const featureIdRaw = getFeatureValue(feature, joinAttr);
-      const featureId = featureIdRaw != null ? String(featureIdRaw) : null;
-
-      if (ctx.selectedGeneId && featureId && featureId === ctx.selectedGeneId) {
-        return ctx.highlightColor;
+      const selected = ctx.selectedGeneId ? String(ctx.selectedGeneId).trim() : null;
+      if (selected) {
+        const locus = getFeatureValue(feature, joinAttr);
+        const id = getFeatureValue(feature, 'ID');
+        const locusStr = locus != null ? String(locus).trim() : '';
+        const idStr = id != null ? String(id).trim() : '';
+        if (locusStr === selected || idStr === selected) return ctx.highlightColor;
       }
 
       const status = resolveEssentialityStatus(feature);

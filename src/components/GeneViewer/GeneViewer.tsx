@@ -65,6 +65,13 @@ export default function GeneViewer(props: GeneViewerProps) {
   const [genesInView, setGenesInView] = useState<GffFeature[]>([]);
   const genesInViewRef = useRef<GffFeature[]>([]);
   genesInViewRef.current = genesInView;
+  /** After a table click we skip syncing from session.selection for a short window so the poll doesn't overwrite back to the previous gene */
+  const lastTableSelectionTimeRef = useRef<number>(0);
+  const TABLE_SELECTION_COOLDOWN_MS = 2000;
+  /** Ensure we only navigate once per table click; otherwise session poll can change selectedFeature and trigger a second nav to a wrong place */
+  const hasNavigatedThisTableClickRef = useRef<boolean>(false);
+  /** Apply initial zoom once when view is ready so more than two genes are visible (showAllRegions). */
+  const initialZoomAppliedRef = useRef<boolean>(false);
 
   const joinAttribute = props.essentiality?.featureJoinAttribute ?? 'locus_tag';
 
@@ -241,7 +248,7 @@ export default function GeneViewer(props: GeneViewerProps) {
     };
   }, [essentialityEnabled, selectedLocusTag, essentialityIndex, props.essentiality?.colorMap]);
 
-  // Keep JEXL context up to date (selection + essentiality). Use canonical selectedLocusTag for track highlight.
+  // Keep JEXL context up to date (selection + essentiality). Use canonical selectedLocusTag for track highlight (blue bar).
   useEffect(() => {
     setGeneViewerJexlContext({
       selectedGeneId: selectedLocusTag ?? selectedGeneId,
@@ -249,6 +256,7 @@ export default function GeneViewer(props: GeneViewerProps) {
       essentialityIndex: essentialityIndex as any,
       essentialityColorMap: props.essentiality?.colorMap,
       featureJoinAttribute: joinAttribute,
+      highlightColor: '#2563eb',
     });
   }, [selectedLocusTag, selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, props.essentiality?.colorMap]);
 
@@ -279,6 +287,9 @@ export default function GeneViewer(props: GeneViewerProps) {
 
     const tick = () => {
       try {
+        if (Date.now() - lastTableSelectionTimeRef.current < TABLE_SELECTION_COOLDOWN_MS) {
+          return;
+        }
         const locus = getLocusFromSelection();
         if (locus) setSelectedGeneId((prev) => (prev === locus ? prev : locus));
       } catch {
@@ -292,29 +303,83 @@ export default function GeneViewer(props: GeneViewerProps) {
   }, [viewState, props.essentiality?.featureJoinAttribute]);
 
   // Force track re-render when selection or essentiality changes so JEXL (getGeneColor) runs again.
+  // This runs when user selects a gene in the table so the JBrowse track highlights that gene.
   useEffect(() => {
     if (!viewState) return;
     try {
       const view = viewState.session?.views?.[0];
-      view?.tracks?.forEach((track: any) => {
-        track?.displays?.forEach((display: any) => {
-          try {
-            display?.reload?.();
-          } catch {
-            // ignore
-          }
+      if (view?.tracks) {
+        view.tracks.forEach((track: any) => {
+          track?.displays?.forEach((display: any) => {
+            try {
+              display?.reload?.();
+            } catch {
+              // ignore
+            }
+          });
         });
-      });
+        // Force view to repaint so highlight appears (e.g. when selection came from table click)
+        if (typeof view.setWidth === 'function' && view.width != null) {
+          const w = view.width;
+          view.setWidth(w + 0.001);
+          const t = window.setTimeout(() => {
+            try {
+              view.setWidth(w);
+            } catch {
+              // ignore
+            }
+          }, 20);
+          return () => window.clearTimeout(t);
+        }
+      }
     } catch {
       // ignore
     }
   }, [viewState, selectedLocusTag, selectedGeneId, essentialityIndex, essentialityEnabled]);
+
+  // When user selects a gene from the table, navigate JBrowse to that gene using navToLocString.
+  // Only run once per table click: after nav, session selection can change and would retrigger and jump again.
+  // Use the view's current refName so we match the assembly's ref naming (avoids wrong-scaffold jump).
+  useEffect(() => {
+    if (!viewState || !selectedFeature) return;
+    if (Date.now() - lastTableSelectionTimeRef.current >= 800) return;
+    if (hasNavigatedThisTableClickRef.current) return;
+
+    const view = viewState.session?.views?.[0];
+    if (!view || view.type !== 'LinearGenomeView' || !view.initialized) return;
+
+    try {
+      hasNavigatedThisTableClickRef.current = true;
+      // Use refName from the view's displayed region so it matches assembly (avoids "hundreds of genes forward" wrong ref).
+      const region = view.displayedRegions?.[0];
+      const refName = region?.refName ?? selectedFeature.refName;
+      // Location string: refName:start..end (1-based inclusive). GffFeature has 0-based start, end = 1-based end.
+      const start1 = selectedFeature.start + 1;
+      const end1 = selectedFeature.end;
+      const locString = `${refName}:${start1}..${end1}`;
+      if (typeof view.navToLocString === 'function') {
+        view.navToLocString(locString, props.assembly.name);
+      }
+      const zoomBpPerPx = 80;
+      const t = window.setTimeout(() => {
+        try {
+          if (typeof view.zoomTo === 'function') view.zoomTo(zoomBpPerPx);
+        } catch {
+          // ignore
+        }
+      }, 200);
+      return () => window.clearTimeout(t);
+    } catch {
+      hasNavigatedThisTableClickRef.current = false;
+    }
+  }, [viewState, selectedFeature, props.assembly.name]);
 
   const assemblyConfig = useMemo(() => buildAssemblyConfig(props), [props]);
   const tracksConfig = useMemo(() => buildTracksConfig(props), [props]);
 
   // Initialize JBrowse view state
   useEffect(() => {
+    initialZoomAppliedRef.current = false;
     let cancelled = false;
 
     async function init() {
@@ -383,6 +448,39 @@ export default function GeneViewer(props: GeneViewerProps) {
       cancelled = true;
     };
   }, [props.initialLocation, props.assembly.fasta.faiUrl, props.assembly.name, assemblyConfig, tracksConfig]);
+
+  // Apply initial zoom once when view is ready so the whole initial region is visible (more genes, not just two).
+  useEffect(() => {
+    if (!viewState || initialZoomAppliedRef.current) return;
+    const view = viewState.session?.views?.[0];
+    if (!view || view.type !== 'LinearGenomeView') return;
+
+    const apply = () => {
+      try {
+        if (typeof view.showAllRegions === 'function') {
+          view.showAllRegions();
+          initialZoomAppliedRef.current = true;
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    if (view.initialized) {
+      apply();
+      return;
+    }
+    let count = 0;
+    const maxTries = 30; // ~3s
+    const id = window.setInterval(() => {
+      count++;
+      if (view.initialized || count >= maxTries) {
+        if (view.initialized) apply();
+        window.clearInterval(id);
+      }
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [viewState]);
 
   // Feature clicks: capture JBrowse clicks via DOM and infer locus tags from data-testid.
   useEffect(() => {
@@ -566,7 +664,11 @@ export default function GeneViewer(props: GeneViewerProps) {
         <GenesInViewTable
           features={genesInView}
           selectedId={selectedLocusTag}
-          onSelect={(id) => setSelectedGeneId(id)}
+          onSelect={(id) => {
+            lastTableSelectionTimeRef.current = Date.now();
+            hasNavigatedThisTableClickRef.current = false;
+            setSelectedGeneId(id);
+          }}
           joinAttribute={joinAttribute}
         />
       ) : null}

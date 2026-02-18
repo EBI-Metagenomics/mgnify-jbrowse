@@ -139,7 +139,10 @@ export function buildDefaultSessionConfig(opts: {
                 id: 'gene_features-LinearBasicDisplay',
                 type: 'LinearBasicDisplay',
                 rendererTypeName: 'SvgFeatureRenderer',
-                renderer: { type: 'SvgFeatureRenderer' },
+                renderer: {
+                  type: 'SvgFeatureRenderer',
+                  color1: 'jexl:getGeneColor(feature)',
+                },
                 height: 280,
               },
             ],
