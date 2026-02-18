@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createViewState, JBrowseApp } from '@jbrowse/react-app';
 import { createRoot } from 'react-dom/client';
 
@@ -18,6 +18,26 @@ import { FeaturePanel } from './FeaturePanel';
 import { GenesInViewTable } from './GenesInViewTable';
 
 type ViewModel = ReturnType<typeof createViewState>;
+
+// Heuristic to distinguish real feature IDs (locus_tag, GFF ID) from JBrowse internal IDs
+function isLikelyFeatureId(rawId: string | null): boolean {
+  if (!rawId) return false;
+  const id = rawId.trim();
+  if (!id) return false;
+  if (/\s/.test(id)) return false;
+
+  // Reject JBrowse layout/block keys (e.g. "-464386435-offset-1083315") - these are not locus_tags
+  if (/^-\d+-offset-\d+$/.test(id)) return false;
+  if (/^-\d+$/.test(id)) return false;
+
+  // Ignore known JBrowse UI container / display testids
+  if (/^display-/.test(id) || /^trackRenderingContainer-/.test(id) || id === 'trackContainer') return false;
+  if (/(container|tracks?|svg|placeholder)/i.test(id)) return false;
+
+  // Feature ids are typically locus_tag (e.g. BU_ATCC8492_00001) or GFF ID (e.g. gene-xxx) - have letters
+  if (!/[A-Za-z]/.test(id)) return false;
+  return id.length >= 2;
+}
 
 function parseInitialLocation(loc: string): { refName: string; start: number; end: number } | null {
   // formats: "contig_1:1..10000" or "contig_1:1-10000"
@@ -43,8 +63,23 @@ export default function GeneViewer(props: GeneViewerProps) {
   );
 
   const [genesInView, setGenesInView] = useState<GffFeature[]>([]);
+  const genesInViewRef = useRef<GffFeature[]>([]);
+  genesInViewRef.current = genesInView;
 
   const joinAttribute = props.essentiality?.featureJoinAttribute ?? 'locus_tag';
+
+  // Resolve a clicked feature id (e.g. GFF ID or locus_tag) to the canonical locus_tag for selection/panel/table
+  const resolveToLocusTag = useCallback((featureId: string, features: GffFeature[]): string => {
+    const norm = String(featureId).trim();
+    if (!norm) return featureId;
+    for (const f of features) {
+      const attrs = f.attributes ?? {};
+      const locus = String(attrs[joinAttribute] ?? attrs.locus_tag ?? f.locus_tag ?? attrs.ID ?? f.id ?? '').trim();
+      const id = String(attrs.ID ?? f.id ?? '').trim();
+      if (norm === locus || norm === id) return locus || id || featureId;
+    }
+    return featureId;
+  }, [joinAttribute]);
   const genesInViewTypes = useMemo(
     () => props.ui?.genesInViewTypes ?? ['gene'],
     [props.ui?.genesInViewTypes],
@@ -92,16 +127,188 @@ export default function GeneViewer(props: GeneViewerProps) {
     props.essentiality?.csvStatusColumn,
   ]);
 
-  // Keep JEXL context up to date (selection + essentiality)
+  // Debug: confirm this build is loaded (in console: window.__GENEVIEWER_DEBUG)
+  useEffect(() => {
+    (window as any).__GENEVIEWER_DEBUG = 'v2-' + Date.now();
+    return () => {
+      delete (window as any).__GENEVIEWER_DEBUG;
+    };
+  }, []);
+
+  // Compute visible region and query genes-in-view from GFF (must run before selectedFeature/selectedLocusTag)
+  const visibleRegion = useJBrowseVisibleRegion(viewState, 200);
+  const gffQueryAbortRef = useRef<{ cancelled: boolean }>({ cancelled: false });
+  useEffect(() => {
+    if (!visibleRegion) return;
+    const { refName, start, end } = visibleRegion;
+    const regionLen = end - start;
+    const buffer = Math.max(0, Math.floor(regionLen * 0.05));
+    const qStart = Math.max(0, start - buffer);
+    const qEnd = end + buffer;
+    gffQueryAbortRef.current.cancelled = true;
+    gffQueryAbortRef.current = { cancelled: false };
+    const token = gffQueryAbortRef.current;
+    const run = async () => {
+      try {
+        const feats = await queryGffRegion({
+          gffUrl: props.annotation.gff.gffUrl,
+          tbiUrl: props.annotation.gff.tbiUrl,
+          refName,
+          start: qStart,
+          end: qEnd,
+          featureTypes: genesInViewTypes,
+        });
+        if (!token.cancelled) setGenesInView(feats);
+      } catch (e: any) {
+        if (!token.cancelled) setError(e?.message ?? String(e));
+      }
+    };
+    const id = window.setTimeout(run, 150);
+    return () => {
+      token.cancelled = true;
+      window.clearTimeout(id);
+    };
+  }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.tbiUrl, genesInViewTypes]);
+
+  // Find feature by selectedGeneId; match locus_tag, ID, or any attribute so panel + table stay in sync.
+  const selectedFeature = useMemo(() => {
+    if (!selectedGeneId) return null;
+    const norm = String(selectedGeneId).trim();
+    if (!norm) return null;
+    const exact = genesInView.find((f) => {
+      const attrs = f.attributes ?? {};
+      const id = String(
+        attrs[joinAttribute] ?? attrs.locus_tag ?? f.locus_tag ?? attrs.ID ?? f.id ?? '',
+      ).trim();
+      return id === norm;
+    });
+    if (exact) return exact;
+    return (
+      genesInView.find((f) => {
+        const attrs = f.attributes ?? {};
+        const locus = String(
+          attrs[joinAttribute] ?? attrs.locus_tag ?? f.locus_tag ?? attrs.ID ?? f.id ?? '',
+        ).trim();
+        if (locus === norm) return true;
+        if (attrs.ID === norm || attrs.locus_tag === norm) return true;
+        return Object.values(attrs).some((v) => String(v).trim() === norm);
+      }) ?? null
+    );
+  }, [selectedGeneId, genesInView, joinAttribute]);
+
+  const selectedLocusTag = useMemo(() => {
+    if (selectedFeature) {
+      const attrs = selectedFeature.attributes ?? {};
+      return String(
+        attrs[joinAttribute] ??
+          attrs.locus_tag ??
+          selectedFeature.locus_tag ??
+          attrs.ID ??
+          selectedFeature.id ??
+          '',
+      ).trim();
+    }
+    return selectedGeneId ? String(selectedGeneId).trim() : null;
+  }, [selectedFeature, selectedGeneId, joinAttribute]);
+
+  // Optional: set to true to log selection state on every click (see docs/GENE_CLICK_FLOW.md)
+  const DEBUG_CLICK_FLOW = false;
+  useEffect(() => {
+    if (!DEBUG_CLICK_FLOW || !selectedGeneId) return;
+    console.log('[GeneViewer] selection state', {
+      selectedGeneId,
+      selectedLocusTag,
+      selectedFeature: selectedFeature
+        ? { id: selectedFeature.attributes?.ID, locus_tag: selectedFeature.attributes?.locus_tag }
+        : null,
+      genesInViewLength: genesInView.length,
+      genesInViewSample: genesInView.slice(0, 3).map((f) => ({
+        id: f.attributes?.ID,
+        locus_tag: f.attributes?.locus_tag,
+      })),
+    });
+  }, [selectedGeneId, selectedLocusTag, selectedFeature, genesInView]);
+
+  const selectedEssentiality = useMemo(() => {
+    if (!essentialityEnabled || !selectedLocusTag) return null;
+    const statusRaw = essentialityIndex.get(String(selectedLocusTag));
+    if (!statusRaw) return null;
+    const status = normalizeEssentialityStatus(statusRaw);
+    return {
+      status,
+      color: getColorForEssentiality(status, props.essentiality?.colorMap),
+      icon: getIconForEssentiality(status),
+    };
+  }, [essentialityEnabled, selectedLocusTag, essentialityIndex, props.essentiality?.colorMap]);
+
+  // Keep JEXL context up to date (selection + essentiality). Use canonical selectedLocusTag for track highlight.
   useEffect(() => {
     setGeneViewerJexlContext({
-      selectedGeneId,
+      selectedGeneId: selectedLocusTag ?? selectedGeneId,
       essentialityEnabled,
       essentialityIndex: essentialityIndex as any,
       essentialityColorMap: props.essentiality?.colorMap,
       featureJoinAttribute: joinAttribute,
     });
-  }, [selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, props.essentiality?.colorMap]);
+  }, [selectedLocusTag, selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, props.essentiality?.colorMap]);
+
+  // When DOM only has layout id, we let the click through so JBrowse sets session.selection.
+  // Sync that selection into our state so the panel and table update.
+  useEffect(() => {
+    if (!viewState) return;
+    const session: any = viewState.session;
+    if (!session) return;
+
+    const getLocusFromSelection = (): string | null => {
+      const sel = session.selection;
+      if (!sel) return null;
+      const feature = sel.feature ?? sel;
+      if (!feature) return null;
+      const joinAttr = props.essentiality?.featureJoinAttribute ?? 'locus_tag';
+      let val: unknown;
+      if (typeof feature.get === 'function') {
+        val = feature.get(joinAttr) ?? feature.get('locus_tag') ?? feature.get('ID') ?? feature.get('id');
+      } else {
+        const data = feature.data ?? feature;
+        const attrs = data?.attributes ?? data;
+        val = attrs?.[joinAttr] ?? attrs?.locus_tag ?? attrs?.ID ?? data?.locus_tag ?? data?.id;
+      }
+      const s = val != null ? String(val).trim() : '';
+      return s || null;
+    };
+
+    const tick = () => {
+      try {
+        const locus = getLocusFromSelection();
+        if (locus) setSelectedGeneId((prev) => (prev === locus ? prev : locus));
+      } catch {
+        // ignore
+      }
+    };
+
+    tick();
+    const id = window.setInterval(tick, 300);
+    return () => window.clearInterval(id);
+  }, [viewState, props.essentiality?.featureJoinAttribute]);
+
+  // Force track re-render when selection or essentiality changes so JEXL (getGeneColor) runs again.
+  useEffect(() => {
+    if (!viewState) return;
+    try {
+      const view = viewState.session?.views?.[0];
+      view?.tracks?.forEach((track: any) => {
+        track?.displays?.forEach((display: any) => {
+          try {
+            display?.reload?.();
+          } catch {
+            // ignore
+          }
+        });
+      });
+    } catch {
+      // ignore
+    }
+  }, [viewState, selectedLocusTag, selectedGeneId, essentialityIndex, essentialityEnabled]);
 
   const assemblyConfig = useMemo(() => buildAssemblyConfig(props), [props]);
   const tracksConfig = useMemo(() => buildTracksConfig(props), [props]);
@@ -118,7 +325,8 @@ export default function GeneViewer(props: GeneViewerProps) {
         const initialLoc = props.initialLocation ? parseInitialLocation(props.initialLocation) : null;
         let initialRefName: string;
         let initialStart = 0;
-        let initialEnd = 20000;
+        // Default to a wider initial window so neighboring genes are visible.
+        let initialEnd = 50000;
 
         if (initialLoc) {
           initialRefName = initialLoc.refName;
@@ -127,7 +335,7 @@ export default function GeneViewer(props: GeneViewerProps) {
         } else {
           const first = await fetchFirstFaiRef(props.assembly.fasta.faiUrl);
           initialRefName = first.refName;
-          initialEnd = Math.min(first.length, 20000);
+          initialEnd = Math.min(first.length, 50000);
         }
 
         const sessionConfig = buildDefaultSessionConfig({
@@ -149,6 +357,21 @@ export default function GeneViewer(props: GeneViewerProps) {
           plugins: [GeneViewerJBrowsePlugin],
         });
 
+        // Override session widget methods so JBrowse never opens the feature drawer (like METT)
+        try {
+          const session = state.session;
+          if (session) {
+            session.showWidget = function () {
+              return undefined;
+            };
+            session.addWidget = function () {
+              return undefined;
+            };
+          }
+        } catch (_) {
+          // ignore
+        }
+
         if (!cancelled) setViewState(state);
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? String(e));
@@ -161,107 +384,134 @@ export default function GeneViewer(props: GeneViewerProps) {
     };
   }, [props.initialLocation, props.assembly.fasta.faiUrl, props.assembly.name, assemblyConfig, tracksConfig]);
 
-  // Feature clicks: capture JBrowse clicks and infer feature IDs from data-testid
+  // Feature clicks: capture JBrowse clicks via DOM and infer locus tags from data-testid.
   useEffect(() => {
     if (!viewState) return;
 
-    const handleClick = (event: MouseEvent) => {
+    const handleFeatureClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      const el = target?.closest?.('[data-testid]') as HTMLElement | null;
-      if (!el) return;
-      const tid = el.getAttribute('data-testid');
-      if (!tid) return;
+      if (!target) return;
 
-      // Many setups use locus_tag as the testid. If not, we still allow selection.
-      setSelectedGeneId(tid);
+      // Log every click so we know the handler runs (diagnostic)
+      if (typeof console !== 'undefined' && console.log) {
+        console.log('[GeneViewer] click received', target.tagName, target.getAttribute?.('data-testid') ?? 'no-testid');
+      }
 
-      // Best-effort: trigger track re-render to apply highlighting quickly
-      try {
-        const view = viewState.session?.views?.[0];
-        view?.tracks?.forEach((track: any) => {
-          track?.displays?.forEach((display: any) => {
-            try {
-              display?.reload?.();
-            } catch {
-              // ignore
-            }
-          });
-        });
-      } catch {
-        // ignore
+      // Walk up from the clicked element to find data-testid that looks like a feature id (locus_tag / GFF ID).
+      // JBrowse may use layout ids like "-464386435-offset-1083315" on wrappers; skip those.
+      let element: HTMLElement | null = target;
+      let rawId: string | null = null;
+      while (element) {
+        const tid = element.getAttribute?.('data-testid');
+        if (tid && isLikelyFeatureId(tid)) {
+          rawId = tid;
+          break;
+        }
+        element = element.parentElement;
+      }
+
+      if (!rawId) {
+        // DOM only has layout id (e.g. -464386435-offset-1083315). Let the click through so JBrowse
+        // sets session.selection; we sync from that in a separate effect.
+        if (typeof console !== 'undefined' && console.log) {
+          console.log('[GeneViewer] no feature id in DOM, letting click through for session.selection sync');
+        }
+        return;
+      }
+
+      // We have a feature-like id from DOM – use it and block JBrowse's drawer
+      event.stopPropagation();
+      event.preventDefault();
+
+      const featureId = rawId.replace(/^box-/, '').trim() || rawId;
+      const locus = resolveToLocusTag(featureId, genesInViewRef.current) || featureId;
+      setSelectedGeneId((prev) => (prev === locus ? prev : locus));
+
+      if (typeof console !== 'undefined' && console.log) {
+        console.log('[GeneViewer] setSelectedGeneId:', locus, '| genesInView:', genesInViewRef.current.length);
       }
     };
 
-    document.addEventListener('click', handleClick, true);
-    return () => document.removeEventListener('click', handleClick, true);
-  }, [viewState]);
+    // Also intercept double-clicks to suppress JBrowse's drawer
+    const handleDoubleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const featureElement = target?.closest?.('[data-testid]') as HTMLElement | null;
+      if (!featureElement) return;
+      const featureId = featureElement.getAttribute('data-testid');
+      if (!isLikelyFeatureId(featureId)) return;
 
-  // Compute visible region and query genes-in-view from GFF
-  const visibleRegion = useJBrowseVisibleRegion(viewState, 600);
-  const gffQueryAbortRef = useRef<{ cancelled: boolean }>({ cancelled: false });
-
-  useEffect(() => {
-    if (!visibleRegion) return;
-    const { refName, start, end } = visibleRegion;
-
-    gffQueryAbortRef.current.cancelled = true;
-    gffQueryAbortRef.current = { cancelled: false };
-    const token = gffQueryAbortRef.current;
-
-    const run = async () => {
-      try {
-        const feats = await queryGffRegion({
-          gffUrl: props.annotation.gff.gffUrl,
-          tbiUrl: props.annotation.gff.tbiUrl,
-          refName,
-          start,
-          end,
-          featureTypes: genesInViewTypes,
-        });
-        if (!token.cancelled) setGenesInView(feats);
-      } catch (e: any) {
-        if (!token.cancelled) setError(e?.message ?? String(e));
-      }
+      event.stopPropagation();
+      event.preventDefault();
     };
 
-    // Debounce slightly to avoid hammering on pan/zoom
-    const id = window.setTimeout(run, 250);
+    document.addEventListener('click', handleFeatureClick, true);
+    document.addEventListener('dblclick', handleDoubleClick, true);
     return () => {
-      token.cancelled = true;
-      window.clearTimeout(id);
+      document.removeEventListener('click', handleFeatureClick, true);
+      document.removeEventListener('dblclick', handleDoubleClick, true);
     };
-  }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.tbiUrl, genesInViewTypes]);
-
-  const selectedFeature = useMemo(() => {
-    if (!selectedGeneId) return null;
-    const norm = String(selectedGeneId);
-    return (
-      genesInView.find((f) => {
-        const attrs = f.attributes ?? {};
-        const id =
-          String(attrs[joinAttribute] ?? attrs.locus_tag ?? f.locus_tag ?? attrs.ID ?? f.id ?? '');
-        return id === norm;
-      }) ?? null
-    );
-  }, [selectedGeneId, genesInView, joinAttribute]);
-
-  const selectedEssentiality = useMemo(() => {
-    if (!essentialityEnabled || !selectedGeneId) return null;
-    const statusRaw = essentialityIndex.get(String(selectedGeneId));
-    if (!statusRaw) return null;
-    const status = normalizeEssentialityStatus(statusRaw);
-    return {
-      status,
-      color: getColorForEssentiality(status, props.essentiality?.colorMap),
-      icon: getIconForEssentiality(status),
-    };
-  }, [essentialityEnabled, selectedGeneId, essentialityIndex, props.essentiality?.colorMap]);
+  }, [viewState, resolveToLocusTag]);
 
   const showLegends = props.ui?.showLegends ?? true;
   const showPanel = props.ui?.showFeaturePanel ?? true;
   const showTable = props.ui?.showGenesInViewTable ?? true;
 
   const heightPx = props.heightPx ?? 720;
+  const jbrowseContainerRef = useRef<HTMLDivElement>(null);
+
+  // Hide JBrowse's native menu bar and feature drawer so only our custom panel is used (like METT)
+  useEffect(() => {
+    if (!viewState) return;
+    const container = jbrowseContainerRef.current;
+    if (!container) return;
+
+    const hideDrawerAndMenu = () => {
+      const selectors = [
+        '.MuiDrawer-root',
+        '.MuiDrawer-modal',
+        '.MuiDrawer-docked',
+        '[class*="BaseFeatureDetail"]',
+        '[class*="FeatureDetails"]',
+        '[class*="DrawerWidget"]',
+        '[class*="FeatureWidget"]',
+        '.MuiBackdrop-root',
+        '[aria-label*="drawer" i]',
+      ];
+      selectors.forEach((sel) => {
+        try {
+          container.querySelectorAll(sel).forEach((el) => {
+            (el as HTMLElement).style.cssText =
+              'display:none!important;visibility:hidden!important;pointer-events:none!important;';
+          });
+        } catch (_) {}
+      });
+      // Hide main app bar (File, Add, etc.) when it appears under our container
+      const fileBtn = container.querySelector('button[data-testid="dropDownMenuButton"]');
+      if (fileBtn?.textContent?.includes('File')) {
+        let p: HTMLElement | null = fileBtn.parentElement;
+        while (p) {
+          if (p.classList.contains('MuiAppBar-root')) {
+            p.style.display = 'none';
+            break;
+          }
+          p = p.parentElement;
+        }
+      }
+    };
+
+    hideDrawerAndMenu();
+    const observer = new MutationObserver(hideDrawerAndMenu);
+    observer.observe(container, { childList: true, subtree: true });
+    const t1 = setTimeout(hideDrawerAndMenu, 100);
+    const t2 = setTimeout(hideDrawerAndMenu, 500);
+    const t3 = setTimeout(hideDrawerAndMenu, 1000);
+    return () => {
+      observer.disconnect();
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [viewState]);
 
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
@@ -279,8 +529,25 @@ export default function GeneViewer(props: GeneViewerProps) {
         </div>
       ) : null}
 
+      {/* Temporary: visible selection indicator so you can confirm clicks update state (remove once verified) */}
+      <div
+        style={{
+          padding: '4px 12px',
+          fontSize: 11,
+          color: '#6b7280',
+          background: '#f9fafb',
+          borderBottom: '1px solid #e5e7eb',
+        }}
+        title="Shows current selection – click a gene in the track or a row in the table"
+      >
+        Selected: {selectedLocusTag ?? '—'} (genes in view: {genesInView.length})
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: showPanel ? '1fr 360px' : '1fr' }}>
-        <div style={{ minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }}>
+        <div
+          ref={jbrowseContainerRef}
+          style={{ minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }}
+        >
           {viewState ? (
             <JBrowseApp viewState={viewState} />
           ) : (
@@ -298,7 +565,7 @@ export default function GeneViewer(props: GeneViewerProps) {
       {showTable ? (
         <GenesInViewTable
           features={genesInView}
-          selectedId={selectedGeneId}
+          selectedId={selectedLocusTag}
           onSelect={(id) => setSelectedGeneId(id)}
           joinAttribute={joinAttribute}
         />

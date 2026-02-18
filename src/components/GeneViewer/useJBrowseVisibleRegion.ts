@@ -55,6 +55,17 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
 
   if (start > end) [start, end] = [end, start];
 
+  // If the computed range is huge (e.g. view.width was full track width, not viewport), cap to a
+  // reasonable "visible" window so "genes in view" count matches what the user sees on screen.
+  const MAX_VISIBLE_BP = 150000;
+  const rangeLen = end - start;
+  if (rangeLen > MAX_VISIBLE_BP) {
+    const center = Math.floor((start + end) / 2);
+    start = Math.max(regionStart, center - Math.floor(MAX_VISIBLE_BP / 2));
+    end = Math.min(regionEnd, start + MAX_VISIBLE_BP);
+    if (start > end) [start, end] = [end, start];
+  }
+
   return {
     refName,
     start,
@@ -63,7 +74,7 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
   };
 }
 
-export function useJBrowseVisibleRegion(viewState: any, pollingMs = 500): VisibleRegion | null {
+export function useJBrowseVisibleRegion(viewState: any, pollingMs = 200): VisibleRegion | null {
   const [region, setRegion] = useState<VisibleRegion | null>(null);
   const lastSigRef = useRef<string>('');
 

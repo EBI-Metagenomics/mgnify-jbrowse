@@ -95,9 +95,17 @@ export function buildDefaultSessionConfig(opts: {
 
   return {
     name: 'Gene Viewer session',
+    // Disable JBrowse's built-in feature detail drawer so we use our custom panel only (like METT)
+    widgets: {
+      BaseFeatureWidget: { type: 'BaseFeatureWidget', disabled: true },
+    },
     views: [
       {
         type: 'LinearGenomeView',
+        configuration: {
+          header: { disable: true, hidden: true },
+          onFeatureClick: null,
+        },
         displayedRegions: [
           {
             refName: opts.initialRefName,
