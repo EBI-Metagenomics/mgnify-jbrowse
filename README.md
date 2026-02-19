@@ -190,10 +190,10 @@ npm install /path/to/mgnify-jbrowse
 ```bash
 cd mgnify-jbrowse
 npm pack
-# Creates mgnify-jbrowse-0.1.2.tgz
+# Creates mgnify-jbrowse-0.1.3.tgz
 
 # In your app
-npm install /path/to/mgnify-jbrowse-0.1.2.tgz
+npm install /path/to/mgnify-jbrowse-0.1.3.tgz
 ```
 
 **Peer dependencies:** Host app must have `react`, `react-dom`, and `@jbrowse/sv-core` as dependencies (or peer deps).
