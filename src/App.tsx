@@ -22,7 +22,7 @@ export default function App() {
   if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !tbiUrl) {
     return (
       <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
-        <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer demo</h2>
+        <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer</h2>
         <p>
           Set the following environment variables to run the demo:
         </p>
@@ -45,7 +45,7 @@ VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
 
   return (
     <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
-      <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer demo</h2>
+      <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer</h2>
       <GeneViewer
         assembly={{
           name: assemblyName,
