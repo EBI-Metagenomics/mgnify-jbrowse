@@ -1,3 +1,7 @@
+<p align="left">
+  <img src="public/MGnify-logo.svg" alt="MGnify" width="120" />
+</p>
+
 # MGnify JBrowse
 
 A React component library for embedding JBrowse genome viewers in MGnify applications. Exports two main components:

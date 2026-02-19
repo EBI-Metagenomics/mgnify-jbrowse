@@ -19,10 +19,17 @@ export default function App() {
 
   const essentialityCsvUrl = import.meta.env.VITE_ESSENTIALITY_CSV_URL || "/essentiality/essentiality_sample.csv";
 
+  const header = (
+    <header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+      <img src="/MGnify-logo.svg" alt="MGnify" style={{ height: 36 }} />
+      <h2 style={{ margin: 0, fontSize: 30 }}>JBrowse Contig Viewer</h2>
+    </header>
+  );
+
   if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !tbiUrl) {
     return (
       <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
-        <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer</h2>
+        {header}
         <p>
           Set the following environment variables to run the demo:
         </p>
@@ -45,7 +52,7 @@ VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
 
   return (
     <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
-      <h2 style={{ marginTop: 0 }}>MGnify JBrowse GeneViewer</h2>
+      {header}
       <GeneViewer
         assembly={{
           name: assemblyName,
