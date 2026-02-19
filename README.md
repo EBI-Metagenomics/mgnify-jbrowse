@@ -1,68 +1,42 @@
-# MGnify JBrowse NPM Component
+# MGnify JBrowse
 
-## Usage
+A React component library for embedding JBrowse genome viewers in MGnify applications. Exports two main components:
 
-Run `npm install` and then `npm start` to start a development instance.
+- **GeneViewer** – Standalone gene viewer with essentiality coloring, feature panel, and genes-in-view table
+- **JBrowseContigViewer** – Contig-level genome browser for MGnify contig viewing workflows
 
-Run `npm build` which produces a `build` directory that can be deployed to a
-static web server
-
----
-
-## Testing
-
-### 1. Local (demo app)
+## Quick start
 
 ```bash
-# Install and start the dev server
 npm install
 npm start
 ```
 
-The app reads URLs from `.env.local` (or env vars). Use `VITE_` prefix (same as METT dataportal). See `.env.example`. Ensure:
+The demo app runs at `http://localhost:5173` and uses the GeneViewer component. Configure URLs via `.env.local` (see [Demo app configuration](#demo-app-configuration)).
 
-- FASTA, FAI, GZI, GFF, and TBI URLs point to reachable files.
-- With Vite, files in `public/` are served at the root (e.g. `http://localhost:5173/essentiality/essentiality_sample.csv`).
-- If you use `localhost:3001` for data, run a separate static server, e.g.:
+---
 
-```bash
-npx serve public -p 3001
-```
+## Documentation
 
-Then run the app in another terminal: `npm start` (Vite serves on 5173 by default).
+| Document | Description |
+|----------|-------------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture overview, project structure, data flow, key files |
+| [docs/QuickStartGuide.md](docs/QuickStartGuide.md) | Quick start guide: setup, common tasks, troubleshooting |
+| [docs/README.md](docs/README.md) | Documentation index |
 
-### 2. As a component in another app
+---
 
-**Option A – npm link (for local development)**
+## Usage
 
-```bash
-# In mgnify-jbrowse repo
-npm run build
-npm link
+### GeneViewer (standalone component)
 
-# In your sample app
-npm link mgnify-jbrowse
-```
+GeneViewer provides:
 
-**Option B – install from local path**
-
-```bash
-# In your sample app
-npm install /path/to/mgnify-jbrowse
-```
-
-**Option C – pack and install tarball**
-
-```bash
-# In mgnify-jbrowse repo
-npm pack
-# Creates mgnify-jbrowse-0.1.2.tgz
-
-# In your sample app
-npm install /path/to/mgnify-jbrowse-0.1.2.tgz
-```
-
-**Usage in the consuming app:**
+- JBrowse Linear Genome View (assembly + gene track)
+- Selected gene highlighting (blue bar)
+- Optional essentiality coloring driven by a local CSV (no API/database)
+- Feature panel (basic annotations from GFF)
+- Synced "genes in view" table (based on current viewport)
 
 ```tsx
 import { GeneViewer } from 'mgnify-jbrowse';
@@ -81,6 +55,14 @@ function App() {
       essentiality={{
         enabled: true,
         csvUrl: '/essentiality/essentiality_sample.csv',
+        csvJoinColumn: 'locus_tag',
+        csvStatusColumn: 'essentiality',
+        featureJoinAttribute: 'locus_tag',
+      }}
+      ui={{
+        showLegends: true,
+        showFeaturePanel: true,
+        showGenesInViewTable: true,
       }}
       heightPx={600}
     />
@@ -88,84 +70,50 @@ function App() {
 }
 ```
 
-Ensure the host app has `react`, `react-dom`, and `@jbrowse/sv-core` as dependencies (or peer deps).
+### JBrowseContigViewer
 
-### 3. Docker
+```tsx
+import { JBrowseContigViewer, type GenomeMeta } from 'mgnify-jbrowse';
 
-Add a `Dockerfile` in the project root:
-
-```dockerfile
-# Build stage
-FROM node:20-alpine AS build
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build:lib
-RUN npm run build:app
-
-# Serve stage
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-Add `nginx.conf` to serve SPA and static assets:
-
-```nginx
-server {
-    listen 80;
-    root /usr/share/nginx/html;
-    index index.html;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+function App() {
+  const genomeMeta: GenomeMeta = { /* ... */ };
+  return (
+    <JBrowseContigViewer
+      genomeMeta={genomeMeta}
+      fileLocations={{
+        fasta: 'https://.../genome.fasta.gz',
+        fai: 'https://.../genome.fasta.gz.fai',
+        gzi: 'https://.../genome.fasta.gz.gzi',
+      }}
+    />
+  );
 }
 ```
 
-Then:
-
-```bash
-docker build -t mgnify-jbrowse .
-docker run -p 8080:80 mgnify-jbrowse
-```
-
-Open http://localhost:8080. FASTA/GFF/essentiality URLs must be reachable from the browser (use absolute URLs, e.g. to a CDN or another server).
-
-## GeneViewer (standalone component)
-
-This repo now exports a `GeneViewer` React component that provides:
-
-- JBrowse Linear Genome View (assembly + gene track)
-- Selected gene highlighting
-- Optional essentiality coloring driven by a local CSV (no API/database)
-- Feature panel (basic annotations from GFF)
-- Synced “genes in view” table (based on current viewport)
-
-### Library usage
+### Library exports
 
 ```ts
-import { GeneViewer, JBrowseContigViewer } from 'mgnify-jbrowse'
+import {
+  GeneViewer,
+  JBrowseContigViewer,
+  type GeneViewerProps,
+  type JBrowseContigViewerProps,
+  type GenomeMeta,
+  type GeneViewerAssemblyConfig,
+  type GeneViewerAnnotationConfig,
+  COLORS,
+  DEFAULT_ESSENTIALITY_COLOR_MAP,
+  getColorForEssentiality,
+  getIconForEssentiality,
+  normalizeEssentialityStatus,
+} from 'mgnify-jbrowse';
 ```
 
-### Essentiality CSV format
+---
 
-The plugin expects a CSV with columns `locus_tag` and `essentiality`. Example:
+## Demo app configuration
 
-```csv
-species,media,element,locus_tag,essentiality
-uniformis,liquid,gene,BU_ATCC8492_00001,essential
-uniformis,solid,gene,BU_ATCC8492_00001,essential
-uniformis,liquid,gene,BU_ATCC8492_00002,not_essential
-```
-
-### Demo app configuration (Vite)
-
-The included demo app reads URLs from env vars (same as METT dataportal). Use `VITE_` prefix. See `.env.example`:
+The demo app reads URLs from env vars (Vite `VITE_` prefix). See `.env.example`:
 
 ```bash
 VITE_ASSEMBLY_NAME=your_assembly_name
@@ -182,46 +130,119 @@ VITE_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx
 VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json
 ```
 
-### Generate Indexes
+---
 
-#### FTP URLs
-FASTA File URL: https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz
-GFF File URL: https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz
+## Essentiality CSV format
 
-#### Generating FASTA file indexes
+The plugin expects a CSV with columns for locus tag and essentiality status. Example:
 
-##### Step 1: Decompress the FASTA File
-```bash 
-$ gunzip -c ERZ1049444_FASTA.fasta.gz > ERZ1049444_FASTA.fasta
-```
-##### Step 2: Recompress as BGZF
-```bash 
-$ bgzip ERZ1049444_FASTA.fasta
-```
-##### To confirm it's BGZF:
-```bash 
-$ file ERZ1049444_FASTA.fasta.gz
-```
-##### Step 3: Create the FASTA Index
-```bash 
-$ samtools faidx ERZ1049444_FASTA.fasta.gz
+```csv
+species,media,element,locus_tag,essentiality
+uniformis,liquid,gene,BU_ATCC8492_00001,essential
+uniformis,solid,gene,BU_ATCC8492_00001,essential
+uniformis,liquid,gene,BU_ATCC8492_00002,not_essential
 ```
 
-#### Generating GFF file indexes
+Configure `csvJoinColumn` and `csvStatusColumn` to match your CSV headers (defaults: `locus_tag`, `essentiality`).
 
-##### Step 1: Decompress the BGZF file
-```bash 
-$ bgzip -d -c ERZ1049444_FASTA_annotations.gff.bgz > ERZ1049444_FASTA_annotations.gff
+---
+
+## Build & deploy
+
+```bash
+# Build library (output to dist/)
+npm run build
+
+# Build demo app (output to build/)
+npm run build:app
+
+# Preview app build
+npm run preview
 ```
-##### Step 2: Recompress with Standard Gzip
-```bash 
-$ gzip ERZ1049444_FASTA_annotations.gff
+
+---
+
+## Using as a dependency
+
+**Option A – npm link (local development)**
+
+```bash
+# In mgnify-jbrowse repo
+npm run build
+npm link
+
+# In your app
+npm link mgnify-jbrowse
 ```
-#####  tabix index
-```bash 
-$ tabix -p gff ERZ1049444_FASTA_annotations.gff.bgz
+
+**Option B – install from path**
+
+```bash
+npm install /path/to/mgnify-jbrowse
 ```
-##### Step 3: Generate .ix and .ixx Index Files
-```bash 
-$ jbrowse text-index --file ERZ1049444_FASTA_annotations.gff.bgz --exclude none --attributes interpro,pfam,eggnog 
+
+**Option C – pack and install tarball**
+
+```bash
+cd mgnify-jbrowse
+npm pack
+# Creates mgnify-jbrowse-0.1.2.tgz
+
+# In your app
+npm install /path/to/mgnify-jbrowse-0.1.2.tgz
 ```
+
+**Peer dependencies:** Host app must have `react`, `react-dom`, and `@jbrowse/sv-core` as dependencies (or peer deps).
+
+---
+
+## Generating indexes
+
+### FASTA indexes
+
+```bash
+# 1. Decompress
+gunzip -c ERZ1049444_FASTA.fasta.gz > ERZ1049444_FASTA.fasta
+
+# 2. Recompress as BGZF
+bgzip ERZ1049444_FASTA.fasta
+
+# 3. Verify BGZF
+file ERZ1049444_FASTA.fasta.gz
+
+# 4. Create FASTA index
+samtools faidx ERZ1049444_FASTA.fasta.gz
+```
+
+### GFF indexes
+
+```bash
+# 1. Decompress
+bgzip -d -c ERZ1049444_FASTA_annotations.gff.bgz > ERZ1049444_FASTA_annotations.gff
+
+# 2. Recompress with standard gzip
+gzip ERZ1049444_FASTA_annotations.gff
+
+# 3. Tabix index
+tabix -p gff ERZ1049444_FASTA_annotations.gff.bgz
+
+# 4. JBrowse text index (optional, for search)
+jbrowse text-index --file ERZ1049444_FASTA_annotations.gff.bgz --exclude none --attributes interpro,pfam,eggnog
+```
+
+### Sample FTP URLs
+
+- FASTA: `https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz`
+- GFF: `https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz`
+
+---
+
+## Local data server
+
+If using `localhost` URLs for data, run a static server for assets:
+
+```bash
+npx serve public -p 3001
+```
+
+Then run the app in another terminal: `npm start` (Vite serves on 5173 by default).
