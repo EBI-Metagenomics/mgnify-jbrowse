@@ -16,30 +16,27 @@ npm install mgnify-jbrowse
 
 ---
 
-## 2. Quick start – GeneViewer in a new React app
+## 2. Quick start from scratch
 
-### Option A: Vite + React (recommended)
+A complete starter flow to get a GeneViewer running in a new app.
+
+### Step 1: Create a Vite + React + TypeScript project
 
 ```bash
 npm create vite@latest my-gene-viewer-app -- --template react-ts
 cd my-gene-viewer-app
+```
+
+### Step 2: Install dependencies
+
+```bash
 npm install
 npm install mgnify-jbrowse
 ```
 
-### Option B: Create React App
+### Step 3: Replace `src/App.tsx`
 
-```bash
-npx create-react-app my-gene-viewer-app --template typescript
-cd my-gene-viewer-app
-npm install mgnify-jbrowse
-```
-
----
-
-## 3. Minimal working example
-
-Replace your `App.tsx` (or main component) with:
+Replace the contents with:
 
 ```tsx
 import { GeneViewer } from 'mgnify-jbrowse';
@@ -79,7 +76,43 @@ function App() {
 export default App;
 ```
 
+### Step 4: Run the app
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser. The viewer will load MGnify sample data.
+
+### Minimal `package.json` (reference)
+
+The Vite template already includes `react` and `react-dom`. After `npm install mgnify-jbrowse`, your `package.json` will have:
+
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "mgnify-jbrowse": "^0.1.4"
+  }
+}
+```
+
+Peer dependencies (`@jbrowse/sv-core`) are installed automatically by npm 7+.
+
 > **Note:** MGnify API URLs may require the analysis ID and file names for your specific dataset. Check the [MGnify API](https://www.ebi.ac.uk/metagenomics/api/v1/) for your analysis's file endpoints. Index files (`.fai`, `.gzi`, `.tbi`) must be available at the same base URL.
+
+---
+
+## 3. Alternative: Create React App
+
+```bash
+npx create-react-app my-gene-viewer-app --template typescript
+cd my-gene-viewer-app
+npm install mgnify-jbrowse
+```
+
+Then replace `src/App.tsx` with the same code as in [§2 Step 3](#step-3-replace-srcapptsx) and run `npm start`.
 
 ---
 

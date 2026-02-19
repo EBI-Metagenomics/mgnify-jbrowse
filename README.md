@@ -6,6 +6,8 @@
 
 A React component library for embedding JBrowse genome viewers in MGnify applications. Exports two main components:
 
+**Production use:** The component is deployed in the [METT Data Portal](https://www.gut-microbes.org/), where researchers explore microbial genomes such as [Bacteroides uniformis (BU_ATCC8492)](http://www.gut-microbes.org/genome/BU_ATCC8492).
+
 - **GeneViewer** – Standalone gene viewer with essentiality coloring, feature panel, and genes-in-view table
 - **JBrowseContigViewer** – Contig-level genome browser for MGnify contig viewing workflows
 
@@ -50,6 +52,7 @@ The demo app runs at `http://localhost:5173` and uses the GeneViewer component. 
 | Document | Description |
 |----------|-------------|
 | [docs/USAGE.md](docs/USAGE.md) | **User guide** – Install from npm, examples, extension ideas |
+| [docs/DOCKER.md](docs/DOCKER.md) | Docker deployment guide |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture overview, project structure, data flow, key files |
 | [docs/QuickStartGuide.md](docs/QuickStartGuide.md) | **Developer guide** – Quick start guide: setup, common tasks, troubleshooting |
 | [docs/README.md](docs/README.md) | Documentation index |
