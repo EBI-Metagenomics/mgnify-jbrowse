@@ -1,0 +1,3 @@
+# Exclude sample data from GitHub release tarballs (keeps releases small)
+# Files remain in the repo when cloning
+public/sample-data/ export-ignore

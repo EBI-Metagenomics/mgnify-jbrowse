@@ -1,0 +1,24 @@
+{
+  "dateCreated": "2024-11-11T11:19:59.170Z",
+  "tracks": [
+    {
+      "trackId": "BU_ATCC8492_annotations",
+      "attributesIndexed": [
+        "Name",
+        "ID"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "localPath": "/Users/vikasg/Documents/ws/work/mett-dataportal/data-generators/index-scripts/gff3_files/BU_ATCC8492/BU_ATCC8492_annotations.gff.gz",
+          "locationType": "LocalPathLocation"
+        }
+      }
+    }
+  ],
+  "assemblyNames": []
+}

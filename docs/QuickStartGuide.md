@@ -23,6 +23,8 @@ npm start
 
 App runs at `http://localhost:5173`. The demo uses GeneViewer with URLs from `.env.local`.
 
+**Quick start with sample data:** Sample FASTA, GFF, and essentiality files are in `public/sample-data/`. Uncomment the sample-data section in `.env.example` and copy to `.env.local`. FASTA and GFF must be BGZF-compressed; see [public/sample-data/README.md](../public/sample-data/README.md).
+
 ---
 
 ## 2. Project structure

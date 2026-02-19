@@ -1,0 +1,50 @@
+# Sample data for quick start
+
+Sample FASTA, GFF, and essentiality files for testing the GeneViewer locally. **Not included in the npm package.**
+
+## Format requirements
+
+The GeneViewer expects **BGZF-compressed** files with indexes:
+
+| Asset | Required format | Index files |
+|-------|-----------------|-------------|
+| FASTA | `.fasta.gz` or `.fa.gz` (BGZF) | `.fai`, `.gzi` |
+| GFF | `.gff.bgz` (BGZF) | `.tbi` |
+
+If your files are uncompressed, see [Generating indexes](../../README.md#generating-indexes) in the main README.
+
+## Directory structure
+
+```
+sample-data/
+├── essentiality/
+│   └── essentiality_sample.csv    # Ready to use
+├── fasta_files/
+│   └── BU_ATCC8492VPI0062_NT5002.1/
+│       ├── *.fa.gz                # BGZF FASTA (create from .fa)
+│       ├── *.fa.gz.fai            # samtools faidx output
+│       └── *.fa.gz.gzi            # BGZF index
+└── gff3_files/
+    └── BU_ATCC8492/
+        ├── *.gff.bgz              # BGZF GFF (create from .gff)
+        ├── *.gff.bgz.tbi          # tabix index
+        └── trix/                  # Optional: JBrowse text search indexes
+```
+
+## Using with the demo app
+
+1. Convert FASTA and GFF to BGZF if needed (see main README).
+2. Copy `.env.example` to `.env.local`.
+3. Set URLs to the sample data (when running `npm start`, use `http://localhost:5173/sample-data/...`):
+
+```bash
+VITE_ASSEMBLY_NAME=BU_ATCC8492VPI0062_NT5002.1
+VITE_FASTA_GZ_URL=http://localhost:5173/sample-data/fasta_files/BU_ATCC8492VPI0062_NT5002.1/BU_ATCC8492VPI0062_NT5002.1.fa.gz
+VITE_FASTA_FAI_URL=http://localhost:5173/sample-data/fasta_files/BU_ATCC8492VPI0062_NT5002.1/BU_ATCC8492VPI0062_NT5002.1.fa.gz.fai
+VITE_FASTA_GZI_URL=http://localhost:5173/sample-data/fasta_files/BU_ATCC8492VPI0062_NT5002.1/BU_ATCC8492VPI0062_NT5002.1.fa.gz.gzi
+VITE_GFF_BGZ_URL=http://localhost:5173/sample-data/gff3_files/BU_ATCC8492/BU_ATCC8492_annotations.gff.bgz
+VITE_GFF_TBI_URL=http://localhost:5173/sample-data/gff3_files/BU_ATCC8492/BU_ATCC8492_annotations.gff.bgz.tbi
+VITE_ESSENTIALITY_CSV_URL=http://localhost:5173/sample-data/essentiality/essentiality_sample.csv
+```
+
+4. Run `npm start`.

@@ -141,6 +141,15 @@ import {
 
 ---
 
+## Sample data (quick start)
+
+Sample FASTA, GFF, and essentiality files are in `public/sample-data/` for local testing. **Not included in the npm package** (excluded via `package.json` files and from release tarballs via `.gitattributes`).
+
+- See [public/sample-data/README.md](public/sample-data/README.md) for format requirements and usage.
+- The essentiality CSV is ready to use; FASTA and GFF may need conversion to BGZF (see [Generating indexes](#generating-indexes)).
+
+---
+
 ## Demo app configuration
 
 The demo app reads URLs from env vars (Vite `VITE_` prefix). See `.env.example`:
@@ -153,7 +162,7 @@ VITE_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
 VITE_GFF_BGZ_URL=https://.../annotations.gff.bgz
 VITE_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
 
-# Optional (defaults to public/essentiality/essentiality_sample.csv):
+# Optional (defaults to public/sample-data/essentiality/essentiality_sample.csv):
 VITE_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
 VITE_GFF_IX_URL=https://.../annotations.gff.bgz.ix
 VITE_GFF_IXX_URL=https://.../annotations.gff.bgz.ixx

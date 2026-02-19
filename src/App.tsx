@@ -17,7 +17,7 @@ export default function App() {
   const ixxUrl = import.meta.env.VITE_GFF_IXX_URL || undefined;
   const metaUrl = import.meta.env.VITE_GFF_META_URL || undefined;
 
-  const essentialityCsvUrl = import.meta.env.VITE_ESSENTIALITY_CSV_URL || "/essentiality/essentiality_sample.csv";
+  const essentialityCsvUrl = import.meta.env.VITE_ESSENTIALITY_CSV_URL || "/sample-data/essentiality/essentiality_sample.csv";
 
   const header = (
     <header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
