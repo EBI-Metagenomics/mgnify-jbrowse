@@ -86,6 +86,23 @@ export interface GeneViewerProps {
    * If omitted, JBrowse will pick a default region.
    */
   initialLocation?: string;
+  /**
+   * Optional initial zoom level (base pairs per pixel).
+   * Lower = more zoomed in (fewer genes visible). Higher = more zoomed out (more genes visible).
+   * If set, overrides initialVisibleBp.
+   */
+  initialBpPerPx?: number;
+  /**
+   * Bp to show in the initial viewport. User can scroll through the full contig.
+   * Default 20000. Set to undefined and omit initialBpPerPx to use showAllRegions() instead.
+   */
+  initialVisibleBp?: number;
+  /**
+   * Optional cap on region size in bp when initialLocation is not provided.
+   * If omitted, the full contig length is used so the user can scroll through the entire contig.
+   * If set, limits the displayed region (e.g. for very long contigs).
+   */
+  initialRegionBp?: number;
   /** Fixed height for the overall viewer area. */
   heightPx?: number;
 }

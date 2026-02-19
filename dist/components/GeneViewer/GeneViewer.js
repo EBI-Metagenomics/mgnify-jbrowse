@@ -38,6 +38,7 @@ const config_1 = require("./jbrowse/config");
 const GeneViewerLegends_1 = require("./GeneViewerLegends");
 const FeaturePanel_1 = require("./FeaturePanel");
 const GenesInViewTable_1 = require("./GenesInViewTable");
+const constants_1 = require("./constants");
 function parseInitialLocation(loc) {
     // formats: "contig_1:1..10000" or "contig_1:1-10000"
     const m = loc.match(/^([^:]+):(\d+)\s*(?:\.\.|-)\s*(\d+)$/);
@@ -64,7 +65,6 @@ function GeneViewer(props) {
     genesInViewRef.current = genesInView;
     /** After a table click we skip syncing from session.selection for a short window so the poll doesn't overwrite back to the previous gene */
     const lastTableSelectionTimeRef = (0, react_1.useRef)(0);
-    const TABLE_SELECTION_COOLDOWN_MS = 2000;
     /** Ensure we only navigate once per table click; otherwise session poll can change selectedFeature and trigger a second nav to a wrong place */
     const hasNavigatedThisTableClickRef = (0, react_1.useRef)(false);
     /** Apply initial zoom once when view is ready so more than two genes are visible (showAllRegions). */
@@ -333,7 +333,7 @@ function GeneViewer(props) {
         };
         const tick = () => {
             try {
-                if (Date.now() - lastTableSelectionTimeRef.current < TABLE_SELECTION_COOLDOWN_MS) {
+                if (Date.now() - lastTableSelectionTimeRef.current < constants_1.TABLE_SELECTION_COOLDOWN_MS) {
                     return;
                 }
                 const locus = getLocusFromSelection();
@@ -448,8 +448,7 @@ function GeneViewer(props) {
                 const initialLoc = props.initialLocation ? parseInitialLocation(props.initialLocation) : null;
                 let initialRefName;
                 let initialStart = 0;
-                // Default to a wider initial window so neighboring genes are visible.
-                let initialEnd = 50000;
+                let initialEnd;
                 if (initialLoc) {
                     initialRefName = initialLoc.refName;
                     initialStart = initialLoc.start;
@@ -458,7 +457,12 @@ function GeneViewer(props) {
                 else {
                     const first = await (0, gff_1.fetchFirstFaiRef)(props.assembly.fasta.faiUrl);
                     initialRefName = first.refName;
-                    initialEnd = Math.min(first.length, 50000);
+                    // Use full contig length so user can scroll through entire contig.
+                    // initialRegionBp can cap this for very long contigs if desired.
+                    initialEnd =
+                        props.initialRegionBp != null
+                            ? Math.min(first.length, props.initialRegionBp)
+                            : first.length;
                 }
                 const geneTrack = tracksConfig.find((t) => t.trackId === 'gene_features');
                 const sessionConfig = (0, config_1.buildDefaultSessionConfig)({
@@ -528,8 +532,9 @@ function GeneViewer(props) {
         return () => {
             cancelled = true;
         };
-    }, [props.initialLocation, props.assembly.fasta.faiUrl, props.assembly.name, assemblyConfig, tracksConfig]);
-    // Apply initial zoom once when view is ready so the whole initial region is visible (more genes, not just two).
+    }, [props.initialLocation, props.initialRegionBp, props.assembly.fasta.faiUrl, props.assembly.name, assemblyConfig, tracksConfig]);
+    // Apply initial zoom once when view is ready.
+    // Displayed region is full contig so user can scroll. Zoom so initial viewport shows initialVisibleBp (default 20k).
     (0, react_1.useEffect)(() => {
         var _a, _b;
         if (!viewState || initialZoomAppliedRef.current)
@@ -538,13 +543,23 @@ function GeneViewer(props) {
         if (!view || view.type !== 'LinearGenomeView')
             return;
         const apply = () => {
+            var _a, _b, _c, _d, _e, _f;
             try {
-                if (typeof view.showAllRegions === 'function') {
-                    view.showAllRegions();
-                    initialZoomAppliedRef.current = true;
+                const width = (_a = view.width) !== null && _a !== void 0 ? _a : 800;
+                const bpPerPx = props.initialBpPerPx;
+                const visibleBp = (_b = props.initialVisibleBp) !== null && _b !== void 0 ? _b : constants_1.DEFAULT_INITIAL_VISIBLE_BP;
+                if (typeof bpPerPx === 'number' && Number.isFinite(bpPerPx)) {
+                    (_d = (_c = view).zoomTo) === null || _d === void 0 ? void 0 : _d.call(_c, bpPerPx);
                 }
+                else if (visibleBp > 0 && width > 0) {
+                    (_f = (_e = view).zoomTo) === null || _f === void 0 ? void 0 : _f.call(_e, visibleBp / width);
+                }
+                else if (typeof view.showAllRegions === 'function') {
+                    view.showAllRegions();
+                }
+                initialZoomAppliedRef.current = true;
             }
-            catch (_a) {
+            catch (_g) {
                 // ignore
             }
         };
@@ -563,7 +578,7 @@ function GeneViewer(props) {
             }
         }, 100);
         return () => window.clearInterval(id);
-    }, [viewState]);
+    }, [viewState, props.initialBpPerPx, props.initialVisibleBp]);
     // Document-level click handler: when user clicks a gene rect (data-testid="box-<id>"), resolve
     // adapter id -> locus_tag so table + panel update. JBrowse uses adapter ids (adp--...) so we
     // must look up the feature in the display to get locus_tag.

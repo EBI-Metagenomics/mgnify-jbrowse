@@ -19,5 +19,11 @@ export {
   normalizeEssentialityStatus,
 } from './essentiality';
 
+export {
+  DEFAULT_INITIAL_VISIBLE_BP,
+  MAX_VISIBLE_BP,
+  TABLE_SELECTION_COOLDOWN_MS,
+} from './constants';
+
 export { default as GeneViewer } from './GeneViewer';
 

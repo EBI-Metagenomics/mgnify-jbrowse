@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useJBrowseVisibleRegion = void 0;
 const react_1 = require("react");
+const constants_1 = require("./constants");
 function computeVisibleRegion(viewState) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const session = viewState === null || viewState === void 0 ? void 0 : viewState.session;
@@ -27,11 +28,15 @@ function computeVisibleRegion(viewState) {
     let end = regionEnd;
     try {
         if (typeof view.pxToBp === 'function') {
-            const startBp = view.pxToBp(0);
-            const endBp = view.pxToBp(width);
-            if (Number.isFinite(startBp) && Number.isFinite(endBp) && startBp < endBp) {
-                start = Math.max(regionStart, Math.floor(startBp));
-                end = Math.min(regionEnd, Math.floor(endBp));
+            const left = view.pxToBp(0);
+            const right = view.pxToBp(width);
+            const startBp = left === null || left === void 0 ? void 0 : left.coord;
+            const endBp = right === null || right === void 0 ? void 0 : right.coord;
+            if (Number.isFinite(startBp) && Number.isFinite(endBp)) {
+                const lo = Math.min(startBp, endBp);
+                const hi = Math.max(startBp, endBp);
+                start = Math.max(regionStart, Math.floor(lo));
+                end = Math.min(regionEnd, Math.ceil(hi));
             }
         }
         else if (bpPerPx && width) {
@@ -48,12 +53,11 @@ function computeVisibleRegion(viewState) {
         [start, end] = [end, start];
     // If the computed range is huge (e.g. view.width was full track width, not viewport), cap to a
     // reasonable "visible" window so "genes in view" count matches what the user sees on screen.
-    const MAX_VISIBLE_BP = 150000;
     const rangeLen = end - start;
-    if (rangeLen > MAX_VISIBLE_BP) {
+    if (rangeLen > constants_1.MAX_VISIBLE_BP) {
         const center = Math.floor((start + end) / 2);
-        start = Math.max(regionStart, center - Math.floor(MAX_VISIBLE_BP / 2));
-        end = Math.min(regionEnd, start + MAX_VISIBLE_BP);
+        start = Math.max(regionStart, center - Math.floor(constants_1.MAX_VISIBLE_BP / 2));
+        end = Math.min(regionEnd, start + constants_1.MAX_VISIBLE_BP);
         if (start > end)
             [start, end] = [end, start];
     }

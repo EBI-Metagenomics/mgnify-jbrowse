@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { MAX_VISIBLE_BP } from './constants';
 
 export interface VisibleRegion {
   refName: string;
@@ -37,11 +38,15 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
 
   try {
     if (typeof view.pxToBp === 'function') {
-      const startBp = view.pxToBp(0);
-      const endBp = view.pxToBp(width);
-      if (Number.isFinite(startBp) && Number.isFinite(endBp) && startBp < endBp) {
-        start = Math.max(regionStart, Math.floor(startBp));
-        end = Math.min(regionEnd, Math.floor(endBp));
+      const left = view.pxToBp(0);
+      const right = view.pxToBp(width);
+      const startBp = left?.coord;
+      const endBp = right?.coord;
+      if (Number.isFinite(startBp) && Number.isFinite(endBp)) {
+        const lo = Math.min(startBp, endBp);
+        const hi = Math.max(startBp, endBp);
+        start = Math.max(regionStart, Math.floor(lo));
+        end = Math.min(regionEnd, Math.ceil(hi));
       }
     } else if (bpPerPx && width) {
       const offsetBp = offsetPx * bpPerPx;
@@ -57,7 +62,6 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
 
   // If the computed range is huge (e.g. view.width was full track width, not viewport), cap to a
   // reasonable "visible" window so "genes in view" count matches what the user sees on screen.
-  const MAX_VISIBLE_BP = 150000;
   const rangeLen = end - start;
   if (rangeLen > MAX_VISIBLE_BP) {
     const center = Math.floor((start + end) / 2);
