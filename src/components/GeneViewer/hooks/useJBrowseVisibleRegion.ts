@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MAX_VISIBLE_BP } from './constants';
+import { MAX_VISIBLE_BP } from '../constants';
 
 export interface VisibleRegion {
   refName: string;
@@ -14,9 +14,6 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
   const region = view?.displayedRegions?.[0];
   if (!view || !region) return null;
 
-  // JBrowse views expose `initialized`; accessing layout-dependent props like
-  // `width` before initialization can throw (e.g. "width undefined, make sure
-  // to check for model.initialized"). Bail out until the view is ready.
   if (view.initialized === false) {
     return null;
   }
@@ -28,10 +25,8 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
   const regionEnd: number = region.end ?? regionStart;
 
   const bpPerPx = view.bpPerPx || view.volatile?.bpPerPx;
-  const width: number =
-    view.width ?? view.volatile?.width ?? 800;
-  const offsetPx: number =
-    view.offsetPx ?? view.volatile?.offsetPx ?? 0;
+  const width: number = view.width ?? view.volatile?.width ?? 800;
+  const offsetPx: number = view.offsetPx ?? view.volatile?.offsetPx ?? 0;
 
   let start = regionStart;
   let end = regionEnd;
@@ -60,8 +55,6 @@ function computeVisibleRegion(viewState: any): VisibleRegion | null {
 
   if (start > end) [start, end] = [end, start];
 
-  // If the computed range is huge (e.g. view.width was full track width, not viewport), cap to a
-  // reasonable "visible" window so "genes in view" count matches what the user sees on screen.
   const rangeLen = end - start;
   if (rangeLen > MAX_VISIBLE_BP) {
     const center = Math.floor((start + end) / 2);
@@ -103,4 +96,3 @@ export function useJBrowseVisibleRegion(viewState: any, pollingMs = 200): Visibl
 
   return region;
 }
-

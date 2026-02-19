@@ -1,4 +1,3 @@
-
 export interface GenomeMeta {
     id: number;
     species: string;

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GeneViewerLegends = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const essentiality_1 = require("./essentiality");
-const HIGHLIGHT_COLOR = '#2563eb';
+const constants_1 = require("./constants");
 function GeneViewerLegends(props) {
     var _a, _b, _c;
     const showEssentiality = props.essentialityEnabled;
@@ -40,6 +40,6 @@ function GeneViewerLegends(props) {
                             const color = (0, essentiality_1.getColorForEssentiality)(status, colorMap);
                             const icon = (0, essentiality_1.getIconForEssentiality)(status);
                             return ((0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', alignItems: 'center' }, children: [renderSwatch(color), (0, jsx_runtime_1.jsxs)("span", { children: [it.label, " ", (0, jsx_runtime_1.jsx)("span", { "aria-hidden": "true", children: icon })] })] }, it.label));
-                        }) })] })) : null, (0, jsx_runtime_1.jsxs)("div", { children: [(0, jsx_runtime_1.jsx)("div", { style: { fontWeight: 700, marginBottom: 4 }, children: "Codons" }), codonItems.map((it) => ((0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', alignItems: 'center', marginBottom: 4 }, children: [renderSwatch(it.color), (0, jsx_runtime_1.jsx)("span", { children: it.label })] }, it.label)))] }), (0, jsx_runtime_1.jsxs)("div", { children: [(0, jsx_runtime_1.jsx)("div", { style: { fontWeight: 700, marginBottom: 4 }, children: "User Actions" }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', alignItems: 'center' }, children: [renderSwatch(HIGHLIGHT_COLOR), (0, jsx_runtime_1.jsx)("span", { children: "Selected Gene" })] })] })] }));
+                        }) })] })) : null, (0, jsx_runtime_1.jsxs)("div", { children: [(0, jsx_runtime_1.jsx)("div", { style: { fontWeight: 700, marginBottom: 4 }, children: "Codons" }), codonItems.map((it) => ((0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', alignItems: 'center', marginBottom: 4 }, children: [renderSwatch(it.color), (0, jsx_runtime_1.jsx)("span", { children: it.label })] }, it.label)))] }), (0, jsx_runtime_1.jsxs)("div", { children: [(0, jsx_runtime_1.jsx)("div", { style: { fontWeight: 700, marginBottom: 4 }, children: "User Actions" }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'flex', alignItems: 'center' }, children: [renderSwatch(constants_1.COLORS.highlight), (0, jsx_runtime_1.jsx)("span", { children: "Selected Gene" })] })] })] }));
 }
 exports.GeneViewerLegends = GeneViewerLegends;

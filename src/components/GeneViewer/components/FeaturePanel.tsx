@@ -1,10 +1,11 @@
 import React from 'react';
-import type { GffFeature } from './gff';
+import type { GffFeature } from '../gff';
+import { COLORS, TABLE_STYLES } from '../constants';
 
 function Field(props: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 2 }}>{props.label}</div>
+      <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 2 }}>{props.label}</div>
       <div style={{ fontSize: 13, wordBreak: 'break-word' }}>{props.children}</div>
     </div>
   );
@@ -17,7 +18,7 @@ export function FeaturePanel(props: {
   const f = props.feature;
   if (!f) {
     return (
-      <div style={{ padding: 12, color: '#6b7280', fontSize: 13 }}>
+      <div style={{ padding: 12, color: COLORS.textMuted, fontSize: 13 }}>
         Select a gene to see details.
       </div>
     );
@@ -59,18 +60,18 @@ export function FeaturePanel(props: {
         </Field>
       ) : null}
 
-      <div style={{ marginTop: 14, fontWeight: 700, marginBottom: 6, fontSize: 12 }}>
+      <div style={{ marginTop: 14, fontWeight: 700, marginBottom: 6, fontSize: TABLE_STYLES.fontSize }}>
         Attributes
       </div>
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 6 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+      <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 6 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: TABLE_STYLES.fontSize }}>
           <tbody>
             {Object.entries(attrs).map(([k, v]) => (
               <tr key={k}>
-                <td style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6', width: 120, color: '#374151' }}>
+                <td style={{ padding: TABLE_STYLES.cellPadding, borderBottom: `1px solid ${COLORS.borderLight}`, width: 120, color: COLORS.textPrimary }}>
                   {k}
                 </td>
-                <td style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6', color: '#111827' }}>
+                <td style={{ padding: TABLE_STYLES.cellPadding, borderBottom: `1px solid ${COLORS.borderLight}`, color: COLORS.textDark }}>
                   {v || '—'}
                 </td>
               </tr>
@@ -81,4 +82,3 @@ export function FeaturePanel(props: {
     </div>
   );
 }
-

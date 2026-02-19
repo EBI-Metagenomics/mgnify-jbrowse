@@ -1,16 +1,10 @@
-import {GenomeMeta} from "../../interfaces/Genome";
-
-const getDefaultSessionConfig = (
-    genomeMeta: GenomeMeta | null,
-    assembly: any,
-    tracks: any[]
-) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const getDefaultSessionConfig = (genomeMeta, assembly, tracks) => {
     if (!genomeMeta) {
-        console.log("Genome meta information not found");
+        console.log('Genome meta information not found');
         return null;
     }
-
-
     return {
         name: 'New session',
         views: [
@@ -20,7 +14,7 @@ const getDefaultSessionConfig = (
                     {
                         refName: 'ERZ1049444.1-NODE-1-length-411323-cov-24.763004',
                         start: 0,
-                        end: 400000, // dynamically change it to length of contig we want to show
+                        end: 400000,
                         assemblyName: genomeMeta.assembly_name,
                     },
                 ],
@@ -49,9 +43,7 @@ const getDefaultSessionConfig = (
                                 id: 'structural_annotation-LinearBasicDisplay',
                                 type: 'LinearBasicDisplay',
                                 rendererTypeName: 'SvgFeatureRenderer',
-                                renderer: {
-                                    type: 'SvgFeatureRenderer',
-                                },
+                                renderer: { type: 'SvgFeatureRenderer' },
                                 height: 280,
                             },
                         ],
@@ -61,5 +53,4 @@ const getDefaultSessionConfig = (
         ],
     };
 };
-
-export default getDefaultSessionConfig;
+exports.default = getDefaultSessionConfig;

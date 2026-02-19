@@ -1,2 +1,2 @@
-export { default as JBrowseContigViewer } from '../JBrowseContigViewer';
+export { default as JBrowseContigViewer, type JBrowseContigViewerProps, type GenomeMeta, } from '../JBrowseContigViewer';
 export * from '../components/GeneViewer';

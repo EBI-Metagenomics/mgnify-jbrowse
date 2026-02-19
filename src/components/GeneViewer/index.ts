@@ -20,7 +20,10 @@ export {
 } from './essentiality';
 
 export {
+  COLORS,
   DEFAULT_INITIAL_VISIBLE_BP,
+  DEFAULT_VIEWER_HEIGHT_PX,
+  FEATURE_PANEL_WIDTH_PX,
   MAX_VISIBLE_BP,
   TABLE_SELECTION_COOLDOWN_MS,
 } from './constants';

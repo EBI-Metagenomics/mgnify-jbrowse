@@ -1,5 +1,6 @@
 import React from 'react';
-import type { GffFeature } from './gff';
+import type { GffFeature } from '../gff';
+import { COLORS, TABLE_STYLES } from '../constants';
 
 export function GenesInViewTable(props: {
   features: GffFeature[];
@@ -9,22 +10,23 @@ export function GenesInViewTable(props: {
 }) {
   const { features, selectedId, onSelect, joinAttribute } = props;
 
+  const { cellPadding, fontSize } = TABLE_STYLES;
   return (
-    <div style={{ borderTop: '1px solid #e5e7eb' }}>
-      <div style={{ padding: '8px 12px', fontWeight: 800, fontSize: 12 }}>
+    <div style={{ borderTop: `1px solid ${COLORS.border}` }}>
+      <div style={{ padding: '8px 12px', fontWeight: 800, fontSize }}>
         Genes in view ({features.length})
       </div>
       <div style={{ overflow: 'visible' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize }}>
           <thead>
-            <tr style={{ position: 'sticky', top: 0, background: '#fff' }}>
-              <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid #e5e7eb' }}>
+            <tr style={{ position: 'sticky', top: 0, background: COLORS.background }}>
+              <th style={{ textAlign: 'left', padding: cellPadding, borderBottom: `1px solid ${COLORS.border}` }}>
                 Locus tag
               </th>
-              <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid #e5e7eb' }}>
+              <th style={{ textAlign: 'left', padding: cellPadding, borderBottom: `1px solid ${COLORS.border}` }}>
                 Product
               </th>
-              <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid #e5e7eb' }}>
+              <th style={{ textAlign: 'left', padding: cellPadding, borderBottom: `1px solid ${COLORS.border}` }}>
                 Location
               </th>
             </tr>
@@ -44,7 +46,7 @@ export function GenesInViewTable(props: {
                     if (locus) onSelect(locus);
                   }}
                   style={{
-                    background: isSelected ? '#eef2ff' : undefined,
+                    background: isSelected ? COLORS.selectedRow : undefined,
                     cursor: locus ? 'pointer' : 'default',
                   }}
                   tabIndex={locus ? 0 : -1}
@@ -53,13 +55,13 @@ export function GenesInViewTable(props: {
                   }}
                   aria-selected={locus ? isSelected : undefined}
                 >
-                  <td style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6' }}>
+                  <td style={{ padding: cellPadding, borderBottom: `1px solid ${COLORS.borderLight}` }}>
                     {locus || '—'}
                   </td>
-                  <td style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6' }}>
+                  <td style={{ padding: cellPadding, borderBottom: `1px solid ${COLORS.borderLight}` }}>
                     {product}
                   </td>
-                  <td style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6', color: '#374151' }}>
+                  <td style={{ padding: cellPadding, borderBottom: `1px solid ${COLORS.borderLight}`, color: COLORS.textPrimary }}>
                     {f.refName}:{f.start + 1}..{f.end}
                   </td>
                 </tr>
@@ -71,4 +73,3 @@ export function GenesInViewTable(props: {
     </div>
   );
 }
-

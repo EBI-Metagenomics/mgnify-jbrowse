@@ -31,14 +31,14 @@ const Plugin_1 = __importDefault(require("@jbrowse/core/Plugin"));
 const pluggableElementTypes_1 = require("@jbrowse/core/pluggableElementTypes");
 const Gff3TabixWithEssentialityAdapter_1 = require("./Gff3TabixWithEssentialityAdapter");
 const essentiality_1 = require("../essentiality");
-const DEFAULT_HIGHLIGHT_COLOR = '#2563eb';
+const constants_1 = require("../constants");
 const ctx = {
     selectedGeneId: null,
     essentialityEnabled: false,
     essentialityIndex: new Map(),
     essentialityColorMap: essentiality_1.DEFAULT_ESSENTIALITY_COLOR_MAP,
     featureJoinAttribute: 'locus_tag',
-    highlightColor: DEFAULT_HIGHLIGHT_COLOR,
+    highlightColor: constants_1.COLORS.highlight,
 };
 // Debug counter so we don't spam the console from JEXL
 let debugGeneColorCount = 0;

@@ -1,13 +1,12 @@
 import React from 'react';
-import type { EssentialityConfig } from './types';
+import type { EssentialityConfig } from '../types';
 import {
   DEFAULT_ESSENTIALITY_COLOR_MAP,
   getColorForEssentiality,
   getIconForEssentiality,
   normalizeEssentialityStatus,
-} from './essentiality';
-
-const HIGHLIGHT_COLOR = '#2563eb';
+} from '../essentiality';
+import { COLORS } from '../constants';
 
 export function GeneViewerLegends(props: {
   essentiality?: EssentialityConfig;
@@ -47,7 +46,7 @@ export function GeneViewerLegends(props: {
     <div
       style={{
         padding: '8px 12px',
-        borderBottom: '1px solid #e5e7eb',
+        borderBottom: `1px solid ${COLORS.border}`,
         display: 'flex',
         gap: 24,
         flexWrap: 'wrap',
@@ -103,11 +102,10 @@ export function GeneViewerLegends(props: {
       <div>
         <div style={{ fontWeight: 700, marginBottom: 4 }}>User Actions</div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          {renderSwatch(HIGHLIGHT_COLOR)}
+          {renderSwatch(COLORS.highlight)}
           <span>Selected Gene</span>
         </div>
       </div>
     </div>
   );
 }
-

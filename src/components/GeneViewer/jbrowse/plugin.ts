@@ -12,8 +12,7 @@ import {
   getIconForEssentiality,
   normalizeEssentialityStatus,
 } from '../essentiality';
-
-const DEFAULT_HIGHLIGHT_COLOR = '#2563eb';
+import { COLORS } from '../constants';
 
 type EssentialityIndex = Map<string, EssentialityStatus>;
 
@@ -32,7 +31,7 @@ const ctx: GeneViewerJexlContext = {
   essentialityIndex: new Map(),
   essentialityColorMap: DEFAULT_ESSENTIALITY_COLOR_MAP,
   featureJoinAttribute: 'locus_tag',
-  highlightColor: DEFAULT_HIGHLIGHT_COLOR,
+  highlightColor: COLORS.highlight,
 };
 
 // Debug counter so we don't spam the console from JEXL
