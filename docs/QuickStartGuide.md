@@ -1,6 +1,8 @@
 # Quick Start Guide – MGnify JBrowse
 
-Quick reference for developers working on this project.
+Quick reference for developers working on the mgnify-jbrowse repository (clone, build, modify).
+
+> **Using the package from npm?** See [USAGE.md](./USAGE.md) for install instructions, examples, and extension ideas.
 
 ---
 
@@ -133,7 +135,7 @@ Before demoing, verify:
 | Issue | Check |
 |-------|-------|
 | Blue bar not showing | `window.selectedGeneId` in console; track config has `color1: 'jexl:getGeneColor(feature)'` |
-| CORS / 404 on GFF/FASTA | URLs must be reachable from browser; use absolute URLs or same-origin |
+| CORS / 404 on GFF/FASTA | URLs must be reachable from browser; use absolute URLs or same-origin. See [USAGE.md](./USAGE.md#8-troubleshooting) for consumer-side tips |
 | Essentiality not loading | CSV URL; `csvJoinColumn` / `csvStatusColumn` match CSV headers |
 | Build fails | `npm run build`; check `tsconfig.lib.json` includes `src/lib` |
 
@@ -141,5 +143,6 @@ Before demoing, verify:
 
 ## 8. Links
 
+- [USAGE.md](./USAGE.md) – User guide for installing from npm
 - [ARCHITECTURE.md](./ARCHITECTURE.md) – Full architecture and data flow
 - [README.md](../README.md) – Usage, API, indexes

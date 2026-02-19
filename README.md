@@ -9,7 +9,32 @@ A React component library for embedding JBrowse genome viewers in MGnify applica
 - **GeneViewer** – Standalone gene viewer with essentiality coloring, feature panel, and genes-in-view table
 - **JBrowseContigViewer** – Contig-level genome browser for MGnify contig viewing workflows
 
-## Quick start
+## Install from npm
+
+Use the published package in your React app:
+
+```bash
+npm install mgnify-jbrowse
+```
+
+**Peer dependencies:** Your app needs `react`, `react-dom`, and `@jbrowse/sv-core`. npm 7+ installs these automatically when you install `mgnify-jbrowse`. If you see missing-module errors, run: `npm install react react-dom @jbrowse/sv-core`.
+
+```tsx
+import { GeneViewer } from 'mgnify-jbrowse';
+import '@fontsource/roboto';
+
+<GeneViewer
+  assembly={{ name: 'my-assembly', fasta: { fastaUrl, faiUrl, gziUrl } }}
+  annotation={{ gff: { gffUrl, tbiUrl } }}
+  heightPx={600}
+/>
+```
+
+See [docs/USAGE.md](docs/USAGE.md) for a full user guide with copy-paste examples and extension ideas.
+
+---
+
+## Quick start (development)
 
 ```bash
 npm install
@@ -24,8 +49,9 @@ The demo app runs at `http://localhost:5173` and uses the GeneViewer component. 
 
 | Document | Description |
 |----------|-------------|
+| [docs/USAGE.md](docs/USAGE.md) | **User guide** – Install from npm, examples, extension ideas |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture overview, project structure, data flow, key files |
-| [docs/QuickStartGuide.md](docs/QuickStartGuide.md) | Quick start guide: setup, common tasks, troubleshooting |
+| [docs/QuickStartGuide.md](docs/QuickStartGuide.md) | **Developer guide** – Quick start guide: setup, common tasks, troubleshooting |
 | [docs/README.md](docs/README.md) | Documentation index |
 
 ---
