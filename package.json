@@ -1,6 +1,6 @@
 {
   "name": "mgnify-jbrowse",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "Apache-2.0",
   "main": "dist/lib/index.js",
   "module": "dist/esm/lib/index.js",
