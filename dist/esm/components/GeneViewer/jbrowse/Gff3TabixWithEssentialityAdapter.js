@@ -5,6 +5,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration';
 import Gff3TabixAdapter from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/Gff3TabixAdapter';
 import Gff3TabixConfigSchema from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/configSchema';
+import SimpleFeature from '@jbrowse/core/util/simpleFeature';
 import { ObservableCreate } from '@jbrowse/core/util/rxjs';
 import { map } from 'rxjs/operators';
 import { buildEssentialityIndexFromCsv, getIconForEssentiality, normalizeEssentialityStatus } from '../essentiality';
@@ -95,7 +96,6 @@ export default class Gff3TabixWithEssentialityAdapter extends Gff3TabixAdapter {
             var _a;
             await this.configure(opts);
             const joinAttr = (_a = this.getConf('featureJoinAttribute')) !== null && _a !== void 0 ? _a : 'locus_tag';
-            const SimpleFeature = (await import('@jbrowse/core/util/simpleFeature')).default;
             super
                 .getFeatures(query, opts)
                 .pipe(map((feature) => {

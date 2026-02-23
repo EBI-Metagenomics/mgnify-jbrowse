@@ -5,7 +5,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration';
 import Gff3TabixAdapter from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/Gff3TabixAdapter';
 import Gff3TabixConfigSchema from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/configSchema';
-import type { Feature } from '@jbrowse/core/util/simpleFeature';
+import SimpleFeature, { type Feature } from '@jbrowse/core/util/simpleFeature';
 import { ObservableCreate } from '@jbrowse/core/util/rxjs';
 import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -97,7 +97,6 @@ export default class Gff3TabixWithEssentialityAdapter extends Gff3TabixAdapter {
     return ObservableCreate(async (observer) => {
       await this.configure(opts);
       const joinAttr = (this.getConf('featureJoinAttribute') as string) ?? 'locus_tag';
-      const SimpleFeature = (await import('@jbrowse/core/util/simpleFeature')).default;
       super
         .getFeatures(query, opts)
         .pipe(

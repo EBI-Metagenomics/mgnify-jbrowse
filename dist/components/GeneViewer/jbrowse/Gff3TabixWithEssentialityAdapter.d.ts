@@ -1,5 +1,5 @@
 import Gff3TabixAdapter from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/Gff3TabixAdapter';
-import type { Feature } from '@jbrowse/core/util/simpleFeature';
+import { type Feature } from '@jbrowse/core/util/simpleFeature';
 import type { Observable } from 'rxjs';
 export declare const configSchema: import("@jbrowse/core/configuration/configurationSchema").ConfigurationSchemaType<{
     essentialityCsvUrl: {

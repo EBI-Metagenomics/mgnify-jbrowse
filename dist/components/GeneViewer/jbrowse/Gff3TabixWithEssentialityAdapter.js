@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -34,6 +11,7 @@ exports.configSchema = void 0;
 const configuration_1 = require("@jbrowse/core/configuration");
 const Gff3TabixAdapter_1 = __importDefault(require("@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/Gff3TabixAdapter"));
 const configSchema_1 = __importDefault(require("@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/configSchema"));
+const simpleFeature_1 = __importDefault(require("@jbrowse/core/util/simpleFeature"));
 const rxjs_1 = require("@jbrowse/core/util/rxjs");
 const operators_1 = require("rxjs/operators");
 const essentiality_1 = require("../essentiality");
@@ -124,7 +102,6 @@ class Gff3TabixWithEssentialityAdapter extends Gff3TabixAdapter_1.default {
             var _a;
             await this.configure(opts);
             const joinAttr = (_a = this.getConf('featureJoinAttribute')) !== null && _a !== void 0 ? _a : 'locus_tag';
-            const SimpleFeature = (await Promise.resolve().then(() => __importStar(require('@jbrowse/core/util/simpleFeature')))).default;
             super
                 .getFeatures(query, opts)
                 .pipe((0, operators_1.map)((feature) => {
@@ -143,7 +120,7 @@ class Gff3TabixWithEssentialityAdapter extends Gff3TabixAdapter_1.default {
                     const fType = (_d = (_c = (_b = feature).get) === null || _c === void 0 ? void 0 : _c.call(_b, 'type')) !== null && _d !== void 0 ? _d : '';
                     const origId = (_h = (_g = (_f = (_e = feature).id) === null || _f === void 0 ? void 0 : _f.call(_e)) !== null && _g !== void 0 ? _g : json.uniqueId) !== null && _h !== void 0 ? _h : '';
                     const newId = fType === 'gene' ? locus : `${locus}::${fType}::${origId}`;
-                    return new SimpleFeature({ ...json, uniqueId: newId });
+                    return new simpleFeature_1.default({ ...json, uniqueId: newId });
                 }
                 return feature;
             }))
