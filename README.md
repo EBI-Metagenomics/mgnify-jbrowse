@@ -52,6 +52,7 @@ The demo app runs at `http://localhost:5173` and uses the GeneViewer component. 
 | Document | Description |
 |----------|-------------|
 | [docs/USAGE.md](docs/USAGE.md) | **User guide** – Install from npm, examples, extension ideas |
+| [docs/EXERCISES.md](docs/EXERCISES.md) | **Learn by doing** – Hands-on exercises and tests |
 | [docs/DOCKER.md](docs/DOCKER.md) | Docker deployment guide |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture overview, project structure, data flow, key files |
 | [docs/QuickStartGuide.md](docs/QuickStartGuide.md) | **Developer guide** – Quick start guide: setup, common tasks, troubleshooting |

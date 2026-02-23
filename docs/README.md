@@ -3,6 +3,7 @@
 | Document | Description                                                                      |
 |----------|----------------------------------------------------------------------------------|
 | [USAGE.md](./USAGE.md) | **User guide** – Install from npm, copy-paste examples, extension ideas |
+| [EXERCISES.md](./EXERCISES.md) | **Learn by doing** – Hands-on exercises, experiments, tests |
 | [DOCKER.md](./DOCKER.md) | Docker deployment guide |
 | [QuickStartGuide.md](./QuickStartGuide.md) | **Developer guide** – Project setup, structure, common tasks, troubleshooting |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture overview, project structure, data flow, key files, design decisions |

@@ -54,7 +54,7 @@ src/
 
 ---
 
-## GeneViewer – High-level architecture
+## GeneViewer – High-level Organisation
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -67,11 +67,11 @@ src/
 ┌───────────────┐   ┌─────────────────────┐   ┌──────────────────────────┐
 │ GenesInView   │   │ JBrowse (embed)      │   │ FeaturePanel (custom)     │
 │ Table         │   │ • LinearGenomeView   │   │ • Locus, product, type    │
-│ • Rows =      │   │ • Feature track      │   │ • Attributes (no scroll)  │
+│ • Rows =      │   │ • Feature track      │   │ • Attributes              │
 │   genes in    │   │ • JEXL color =       │   │ • Essentiality badge      │
 │   viewport    │   │   getGeneColor()     │   │ • No JBrowse drawer       │
 └───────────────┘   └─────────────────────┘   └──────────────────────────┘
-         │                    │
+         │                     │
          │  onSelect(id)       │  session.selection (poll 300ms)
          └──────────┬──────────┘
                     ▼
