@@ -21,6 +21,24 @@ npm install mgnify-jbrowse
 
 **Peer dependencies:** Your app needs `react`, `react-dom`, and `@jbrowse/sv-core`. npm 7+ installs these automatically when you install `mgnify-jbrowse`. If you see missing-module errors, run: `npm install react react-dom @jbrowse/sv-core`.
 
+### Configure and run
+
+1. **Create a React app** (if you don't have one):
+   ```bash
+   npm create vite@latest my-gene-viewer-app -- --template react-ts
+   cd my-gene-viewer-app
+   npm install
+   npm install mgnify-jbrowse
+   ```
+
+2. **Add the component** – Replace `src/App.tsx` with the example below (or add it to your own component).
+
+3. **Run the app** – `npm run dev` (Vite) or `npm start` (Create React App), then open the URL in your browser.
+
+For a full step-by-step guide with copy-paste examples, see [docs/USAGE.md](docs/USAGE.md#2-quick-start-from-scratch).
+
+### Basic usage
+
 ```tsx
 import { GeneViewer } from 'mgnify-jbrowse';
 import '@fontsource/roboto';
@@ -32,7 +50,7 @@ import '@fontsource/roboto';
 />
 ```
 
-See [docs/USAGE.md](docs/USAGE.md) for a full user guide with copy-paste examples and extension ideas.
+See [docs/USAGE.md](docs/USAGE.md) for more examples, essentiality coloring, JBrowseContigViewer, and extension ideas.
 
 ---
 
