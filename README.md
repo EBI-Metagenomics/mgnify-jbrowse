@@ -244,39 +244,42 @@ npm install /path/to/mgnify-jbrowse-0.1.3.tgz
 ### FASTA indexes
 
 ```bash
-# 1. Decompress
-gunzip -c ERZ1049444_FASTA.fasta.gz > ERZ1049444_FASTA.fasta
+# 1. Decompress (if required)
+gunzip -c BU_ATCC8492VPI0062_NT5002.1.fa.gz > BU_ATCC8492VPI0062_NT5002.1.fa
 
 # 2. Recompress as BGZF
-bgzip ERZ1049444_FASTA.fasta
+bgzip BU_ATCC8492VPI0062_NT5002.1.fasta
 
 # 3. Verify BGZF
-file ERZ1049444_FASTA.fasta.gz
+file BU_ATCC8492VPI0062_NT5002.1.fasta.gz
 
 # 4. Create FASTA index
-samtools faidx ERZ1049444_FASTA.fasta.gz
+samtools faidx BU_ATCC8492VPI0062_NT5002.1.fasta.gz
 ```
 
 ### GFF indexes
 
 ```bash
-# 1. Decompress
-bgzip -d -c ERZ1049444_FASTA_annotations.gff.bgz > ERZ1049444_FASTA_annotations.gff
+# 1. Decompress (if required)
+gunzip -c BU_ATCC8492_annotations.gff.gz > BU_ATCC8492_annotations.gff
 
-# 2. Recompress with standard gzip
-gzip ERZ1049444_FASTA_annotations.gff
+# 2. Recompress as BGZF
+bgzip BU_ATCC8492_annotations.gff
 
 # 3. Tabix index
-tabix -p gff ERZ1049444_FASTA_annotations.gff.bgz
+tabix -p gff BU_ATCC8492_annotations.gff.gz
 
 # 4. JBrowse text index (optional, for search)
-jbrowse text-index --file ERZ1049444_FASTA_annotations.gff.bgz --exclude none --attributes interpro,pfam,eggnog
+jbrowse text-index --file BU_ATCC8492_annotations.gff.gz --exclude none --attributes interpro,pfam,eggnog
+
+# Generate the metadata file (.gff.gz_meta.json)
+# update the localPath and LocationType
 ```
 
 ### Sample FTP URLs
 
-- FASTA: `https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz`
-- GFF: `https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz`
+- FASTA: `https://ftp.ebi.ac.uk/pub/databases/mett/all_hd_isolates/deduplicated_assemblies/BU_ATCC8492VPI0062_NT5002.1.fa`
+- GFF: `https://ftp.ebi.ac.uk/pub/databases/mett/annotations/v1_2024-04-15/BU_ATCC8492/functional_annotation/merged_gff/BU_ATCC8492_annotations.gff`
 
 ---
 
