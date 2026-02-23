@@ -284,11 +284,16 @@ gunzip -c BU_ATCC8492_annotations.gff.gz > BU_ATCC8492_annotations.gff
 # 2. Recompress as BGZF
 bgzip BU_ATCC8492_annotations.gff
 
+
+# 2a. Sort it in case required 
+gunzip -c BU_ATCC8492_annotations.gff.gz | sort -k1,1 -k4,4n | bgzip -c > BU_ATCC8492_annotations.gff.gz
+
 # 3. Tabix index
 tabix -p gff BU_ATCC8492_annotations.gff.gz
 
 # 4. JBrowse text index (optional, for search)
 jbrowse text-index --file BU_ATCC8492_annotations.gff.gz --exclude none --attributes interpro,pfam,eggnog
+# jbrowse text-index --file BU_ATCC8492_annotations.gff.gz --exclude none --attributes gene,locus_tag,protein_id
 
 # Generate the metadata file (.gff.gz_meta.json)
 # update the localPath and LocationType

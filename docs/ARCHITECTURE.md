@@ -31,6 +31,11 @@ tabix -p gff annotations.gff.bgz     # → annotations.gff.bgz.tbi
 
 ### Optional: JBrowse text search (ix/ixx)
 
+**JBrowse command line utility install reference**
+```bash
+npm install -g @jbrowse/cli
+```
+
 For gene-by-name search in the viewer, create trix indexes with the JBrowse CLI:
 
 ```bash
