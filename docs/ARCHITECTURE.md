@@ -4,6 +4,43 @@ This document describes the architecture of the MGnify JBrowse component library
 
 ---
 
+## Prerequisites & data preparation tools
+
+To prepare assembly and annotation data for the GeneViewer or JBrowseContigViewer, you need these tools. Install them via your package manager (e.g. `brew install samtools tabix` on macOS).
+
+| Tool | Purpose | Output |
+|------|---------|--------|
+| **bgzip** | BGZF compression (part of `htslib` / `samtools`) | `.fasta.gz`, `.gff.bgz` |
+| **samtools** | FASTA index for BGZF FASTA | `.fai`, `.gzi` |
+| **tabix** | GFF index for region queries | `.tbi` |
+| **jbrowse** | Optional trix text-search index | `.ix`, `.ixx`, `_meta.json` |
+
+### FASTA preparation
+
+```bash
+bgzip genome.fasta                    # → genome.fasta.gz
+samtools faidx genome.fasta.gz        # → genome.fasta.gz.fai, genome.fasta.gz.gzi
+```
+
+### GFF preparation
+
+```bash
+bgzip annotations.gff                 # → annotations.gff.bgz
+tabix -p gff annotations.gff.bgz     # → annotations.gff.bgz.tbi
+```
+
+### Optional: JBrowse text search (ix/ixx)
+
+For gene-by-name search in the viewer, create trix indexes with the JBrowse CLI:
+
+```bash
+jbrowse text-index --file annotations.gff.bgz --exclude none --attributes Name,locus_tag,ID,gene
+```
+
+This produces `.ix`, `.ixx`, and `_meta.json`. Provide `ixUrl`, `ixxUrl`, and optionally `metaUrl` in the GFF config to enable search.
+
+---
+
 ## Project structure
 
 ```
@@ -58,21 +95,21 @@ src/
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  GeneViewer (React)                                                      │
-│  • State: selectedGeneId, genesInView, viewState, essentiality           │
-│  • Syncs selection: table ↔ JBrowse ↔ custom panel                       │
+│  GeneViewer (React)                                                     │
+│  • State: selectedGeneId, genesInView, viewState, essentiality          │
+│  • Syncs selection: table ↔ JBrowse ↔ custom panel                      │
 └─────────────────────────────────────────────────────────────────────────┘
          │                    │                        │
          ▼                    ▼                        ▼
 ┌───────────────┐   ┌─────────────────────┐   ┌──────────────────────────┐
-│ GenesInView   │   │ JBrowse (embed)      │   │ FeaturePanel (custom)     │
-│ Table         │   │ • LinearGenomeView   │   │ • Locus, product, type    │
-│ • Rows =      │   │ • Feature track      │   │ • Attributes              │
-│   genes in    │   │ • JEXL color =       │   │ • Essentiality badge      │
-│   viewport    │   │   getGeneColor()     │   │ • No JBrowse drawer       │
+│ GenesInView   │   │ JBrowse (embed)     │   │ FeaturePanel (custom)    │
+│ Table         │   │ • LinearGenomeView  │   │ • Locus, product, type   │
+│ • Rows =      │   │ • Feature track     │   │ • Attributes             │
+│   genes in    │   │ • JEXL color =      │   │ • Essentiality badge     │
+│   viewport    │   │   getGeneColor()    │   │ • No JBrowse drawer      │
 └───────────────┘   └─────────────────────┘   └──────────────────────────┘
          │                     │
-         │  onSelect(id)       │  session.selection (poll 300ms)
+         │  onSelect(id)       │  
          └──────────┬──────────┘
                     ▼
             setSelectedGeneId(id)
@@ -135,32 +172,3 @@ A simpler contig-level genome browser that uses `GenomeMeta` and file locations.
 - **types.ts** – `GenomeMeta` interface.
 
 ---
-
-## Design decisions
-
-- **Single source of truth for selection:** React state `selectedGeneId` (and derived `selectedLocusTag`). Table and JBrowse both feed into it; panel and table read from it.  
-- **No JBrowse feature drawer:** Session/widget overrides and DOM hiding ensure only the custom feature panel is used.  
-- **Highlight robustness (same as METT):** Selection is mirrored to `window.selectedGeneId` so that when JBrowse evaluates JEXL in its own render cycle, it always sees the current selection.  
-- **Table width:** Table is laid out in a grid so its width matches the JBrowse column (same `gridTemplateColumns` as the row above).  
-- **No scroll in table or attributes:** Table and feature panel attributes section are not given a fixed height/scroll so they grow with content.
-
----
-
-## Quick checklist for demos
-
-- [ ] Selection from **table** updates panel and (after reload) blue bar in JBrowse.  
-- [ ] Selection from **JBrowse** (click gene) updates panel and table row.  
-- [ ] Table click optionally centers the gene in the view (`centerAt`), without changing zoom.  
-- [ ] Initial load shows a sensible region and zoom (e.g. `showAllRegions()` once).  
-- [ ] Essentiality (if enabled) drives track color when the gene is not selected; selected gene is always blue.
-
----
-
-## Troubleshooting highlight
-
-If the blue bar still does not show:
-
-1. **Selection set?** In the UI, "Selected: …" should show the locus tag when you click.  
-2. **JEXL sees selection?** In the browser console: `window.selectedGeneId` should match the selected gene when something is selected (same as METT).  
-3. **Track config?** In `config.ts`, the track's display renderer must have `color1: 'jexl:getGeneColor(feature)'` (and the default session's feature track display should match).  
-4. **Reload?** Selection change triggers `display.reload()` and the setWidth repaint; if the track never re-renders, highlight won't appear.

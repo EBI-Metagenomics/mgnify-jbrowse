@@ -6,7 +6,7 @@
 | [EXERCISES.md](./EXERCISES.md) | **Learn by doing** – Hands-on exercises, experiments, tests |
 | [DOCKER.md](./DOCKER.md) | Docker deployment guide |
 | [QuickStartGuide.md](./QuickStartGuide.md) | **Developer guide** – Project setup, structure, common tasks, troubleshooting |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture overview, project structure, data flow, key files, design decisions |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture overview, prerequisites & tools (samtools, tabix, bgzip, jbrowse), project structure, data flow, key files, design decisions |
 | [RELEASE.md](./RELEASE.md) | Release and publish to npm (manual + GitHub Actions)                        |
 
 For usage and API, see the main [README.md](../README.md).
