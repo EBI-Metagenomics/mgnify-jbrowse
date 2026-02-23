@@ -28,9 +28,7 @@
     "reselect": "^5.1.1"
   },
   "peerDependencies": {
-    "@jbrowse/sv-core": "^3.5.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "@jbrowse/sv-core": "^3.5.0"
   },
   "scripts": {
     "start": "vite",
