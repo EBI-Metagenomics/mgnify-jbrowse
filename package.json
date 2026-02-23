@@ -1,6 +1,6 @@
 {
   "name": "mgnify-jbrowse",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "Apache-2.0",
   "main": "dist/lib/index.js",
   "module": "dist/esm/lib/index.js",
@@ -12,15 +12,16 @@
   ],
   "dependencies": {
     "@fontsource/roboto": "^4.5.5",
-    "@gmod/bgzf-filehandle": "^2.0.4",
+    "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/tabix": "^1.0.3",
-    "@jbrowse/core": "^3.5.1",
-    "@jbrowse/plugin-linear-genome-view": "^3.5.1",
-    "@jbrowse/product-core": "^3.5.1",
-    "@jbrowse/react-app2": "^3.5.1",
-    "@jbrowse/sv-core": "^3.5.0",
-    "@mui/material": "^5.0.0",
-    "@mui/system": "^5.0.0",
+    "@jbrowse/core": "^3.7.0",
+    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
+    "@jbrowse/product-core": "^3.7.0",
+    "@jbrowse/react-app2": "^3.7.0",
+    "@jbrowse/sv-core": "^3.7.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "@mui/system": "^7.0.0",
     "buffer": "^6.0.3",
     "generic-filehandle": "^3.0.6",
     "pako": "^2.1.0",
@@ -28,11 +29,12 @@
     "reselect": "^5.1.1"
   },
   "peerDependencies": {
-    "@jbrowse/sv-core": "^3.5.0",
+    "@jbrowse/sv-core": "^3.7.0",
     "react": ">=18",
     "react-dom": ">=18"
   },
   "scripts": {
+    "dev": "vite",
     "start": "vite",
     "build:app": "vite build",
     "preview": "vite preview",
