@@ -39,7 +39,7 @@ For a full step-by-step guide with copy-paste examples, see [docs/USAGE.md](docs
 
 ### Basic usage
 
-```tsx
+```ts
 import { GeneViewer } from 'mgnify-jbrowse';
 import '@fontsource/roboto';
 
@@ -90,7 +90,7 @@ GeneViewer provides:
 - Feature panel (basic annotations from GFF)
 - Synced "genes in view" table (based on current viewport)
 
-```tsx
+```ts
 import { GeneViewer } from 'mgnify-jbrowse';
 
 function App() {
@@ -124,7 +124,7 @@ function App() {
 
 ### JBrowseContigViewer
 
-```tsx
+```ts
 import { JBrowseContigViewer, type GenomeMeta } from 'mgnify-jbrowse';
 
 function App() {

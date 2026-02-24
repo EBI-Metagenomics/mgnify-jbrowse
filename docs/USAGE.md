@@ -38,7 +38,7 @@ npm install mgnify-jbrowse
 
 Replace the contents with:
 
-```tsx
+```ts
 import { GeneViewer } from 'mgnify-jbrowse';
 import '@fontsource/roboto';
 
@@ -120,7 +120,7 @@ Then replace `src/App.tsx` with the same code as in [§2 Step 3](#step-3-replace
 
 To color genes by essentiality status, add an `essentiality` config and point to a CSV:
 
-```tsx
+```ts
 <GeneViewer
   assembly={{ /* ... */ }}
   annotation={{ /* ... */ }}
@@ -155,7 +155,7 @@ If you don't have essentiality data, omit the `essentiality` prop; genes will re
 
 For contig-level genome browsing with MGnify metadata:
 
-```tsx
+```ts
 import { JBrowseContigViewer, type GenomeMeta } from 'mgnify-jbrowse';
 import '@fontsource/roboto';
 
