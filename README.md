@@ -33,24 +33,63 @@ npm install mgnify-jbrowse
 
 2. **Add the component** – Replace `src/App.tsx` with the example below (or add it to your own component).
 
-3. **Run the app** – `npm run dev` (Vite) or `npm start` (Create React App), then open the URL in your browser.
+3. **Create `.env.local`** with your URLs (see [Demo app configuration](#demo-app-configuration)).
+
+4. **Run the app** – `npm run dev` (Vite) or `npm start` (Create React App), then open the URL in your browser.
 
 For a full step-by-step guide with copy-paste examples, see [docs/USAGE.md](docs/USAGE.md#2-quick-start-from-scratch).
 
-### Basic usage
+### Complete App.tsx example
 
 ```tsx
 import { GeneViewer } from 'mgnify-jbrowse';
 import '@fontsource/roboto';
 
-<GeneViewer
-  assembly={{ name: 'my-assembly', fasta: { fastaUrl, faiUrl, gziUrl } }}
-  annotation={{ gff: { gffUrl, csiUrl } }}
-  heightPx={600}
-/>
+function App() {
+  const assemblyName = import.meta.env.VITE_ASSEMBLY_NAME || 'assembly';
+  const fastaUrl = import.meta.env.VITE_FASTA_GZ_URL || '';
+  const faiUrl = import.meta.env.VITE_FASTA_FAI_URL || '';
+  const gziUrl = import.meta.env.VITE_FASTA_GZI_URL || '';
+  const gffUrl = import.meta.env.VITE_GFF_BGZ_URL || '';
+  const csiUrl = import.meta.env.VITE_GFF_CSI_URL || '';
+
+  if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !csiUrl) {
+    return (
+      <div style={{ padding: 16 }}>
+        <p>Configure URLs in <code>.env.local</code>. See <code>.env.example</code> for the required variables.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ width: '100%', padding: 16 }}>
+      <h1>MGnify Gene Viewer</h1>
+      <GeneViewer
+        assembly={{
+          name: assemblyName,
+          fasta: { fastaUrl, faiUrl, gziUrl },
+        }}
+        annotation={{
+          name: 'Annotations',
+          gff: { gffUrl, csiUrl },
+        }}
+        ui={{
+          showLegends: true,
+          showFeaturePanel: true,
+          showGenesInViewTable: true,
+        }}
+        heightPx={600}
+      />
+    </div>
+  );
+}
+
+export default App;
 ```
 
-See [docs/USAGE.md](docs/USAGE.md) for more examples, essentiality coloring, JBrowseContigViewer, and extension ideas.
+> **Layout tip:** Use `width: '100%'` on the parent div so the viewer fills the page. If using the default Vite template, add `html, body, #root { width: 100%; }` to your CSS to avoid a squeezed layout.
+
+See [docs/USAGE.md](docs/USAGE.md) for essentiality coloring, JBrowseContigViewer, and extension ideas.
 
 ---
 

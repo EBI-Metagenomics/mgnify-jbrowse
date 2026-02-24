@@ -43,24 +43,32 @@ import { GeneViewer } from 'mgnify-jbrowse';
 import '@fontsource/roboto';
 
 function App() {
+  const assemblyName = import.meta.env.VITE_ASSEMBLY_NAME || 'assembly';
+  const fastaUrl = import.meta.env.VITE_FASTA_GZ_URL || '';
+  const faiUrl = import.meta.env.VITE_FASTA_FAI_URL || '';
+  const gziUrl = import.meta.env.VITE_FASTA_GZI_URL || '';
+  const gffUrl = import.meta.env.VITE_GFF_BGZ_URL || '';
+  const csiUrl = import.meta.env.VITE_GFF_CSI_URL || '';
+
+  if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !csiUrl) {
+    return (
+      <div style={{ padding: 16 }}>
+        <p>Configure URLs in <code>.env.local</code>. See <code>.env.example</code> for the required variables.</p>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: 16 }}>
+    <div style={{ width: '100%', padding: 16 }}>
       <h1>MGnify Gene Viewer</h1>
       <GeneViewer
         assembly={{
-          name: 'ERZ1049444',
-          fasta: {
-            fastaUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz',
-            faiUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz.fai',
-            gziUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz.gzi',
-          },
+          name: assemblyName,
+          fasta: { fastaUrl, faiUrl, gziUrl },
         }}
         annotation={{
           name: 'Annotations',
-          gff: {
-            gffUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz',
-            csiUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz.csi',
-          },
+          gff: { gffUrl, csiUrl },
         }}
         ui={{
           showLegends: true,
@@ -74,6 +82,21 @@ function App() {
 }
 
 export default App;
+```
+
+> **Layout:** Add `html, body, #root { width: 100%; }` to `src/index.css` so the viewer fills the page (the default Vite template can constrain width).
+
+### Step 3b: Create `.env.local`
+
+Create `.env.local` in the project root with your data URLs:
+
+```
+VITE_ASSEMBLY_NAME=my-assembly
+VITE_FASTA_GZ_URL=https://.../genome.fasta.gz
+VITE_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
+VITE_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
+VITE_GFF_BGZ_URL=https://.../annotations.gff.bgz
+VITE_GFF_CSI_URL=https://.../annotations.gff.bgz.csi
 ```
 
 ### Step 4: Run the app
