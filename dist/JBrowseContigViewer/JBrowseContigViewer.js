@@ -14,7 +14,7 @@ const tracks_1 = __importDefault(require("./tracks"));
 const JBrowseContigViewer = ({ genomeMeta, fileLocations, }) => {
     const [viewState, setViewState] = (0, react_1.useState)(null);
     const assembly = (0, react_1.useMemo)(() => (0, assembly_1.getAssembly2)(genomeMeta, fileLocations), [genomeMeta, fileLocations]);
-    const tracks = (0, react_1.useMemo)(() => (0, tracks_1.default)(genomeMeta, ''), [genomeMeta]);
+    const tracks = (0, react_1.useMemo)(() => (0, tracks_1.default)(genomeMeta, fileLocations), [genomeMeta, fileLocations]);
     const sessionConfig = (0, react_1.useMemo)(() => (0, defaultSessionConfig_1.default)(genomeMeta, assembly, tracks), [genomeMeta, assembly, tracks]);
     const config = (0, react_1.useMemo)(() => ({
         assemblies: [assembly],

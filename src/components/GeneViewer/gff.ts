@@ -55,7 +55,8 @@ function parseGffAttributes(attrString: string): Record<string, string> {
 
 export async function queryGffRegion(opts: {
   gffUrl: string;
-  tbiUrl: string;
+  /** CSI index URL (.csi) */
+  csiUrl: string;
   refName: string;
   start: number;
   end: number;
@@ -63,7 +64,7 @@ export async function queryGffRegion(opts: {
 }): Promise<GffFeature[]> {
   const file = new TabixIndexedFile({
     filehandle: new RemoteFile(opts.gffUrl),
-    tbiFilehandle: new RemoteFile(opts.tbiUrl),
+    csiFilehandle: new RemoteFile(opts.csiUrl),
   });
 
   const wantedTypes = opts.featureTypes?.length ? new Set(opts.featureTypes) : null;

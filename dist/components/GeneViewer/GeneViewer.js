@@ -85,7 +85,7 @@ function GeneViewer(props) {
             try {
                 const feats = await (0, gff_1.queryGffRegion)({
                     gffUrl: props.annotation.gff.gffUrl,
-                    tbiUrl: props.annotation.gff.tbiUrl,
+                    csiUrl: props.annotation.gff.csiUrl,
                     refName,
                     start: qStart,
                     end: qEnd,
@@ -104,7 +104,7 @@ function GeneViewer(props) {
             token.cancelled = true;
             window.clearTimeout(id);
         };
-    }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.tbiUrl, genesInViewTypes]);
+    }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.csiUrl, genesInViewTypes]);
     const { selectedFeature, selectedLocusTag, selectedEssentiality } = (0, useGeneViewerSelection_1.useGeneViewerSelection)(selectedGeneId, genesInView, joinAttribute, essentialityEnabled, essentialityIndex, (_l = props.essentiality) === null || _l === void 0 ? void 0 : _l.colorMap);
     // Keep JEXL context up to date (selection + essentiality) so track highlight (blue bar) works.
     // useLayoutEffect so context is set before paint and before track re-render from reload().

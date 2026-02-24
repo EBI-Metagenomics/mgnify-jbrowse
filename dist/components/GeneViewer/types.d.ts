@@ -13,8 +13,8 @@ export interface FastaBgzipSource {
 export interface GffBgzipSource {
     /** BGZF-compressed GFF3 URL/path (e.g. `.gff.bgz`) */
     gffUrl: string;
-    /** Tabix index (e.g. `.tbi`) */
-    tbiUrl: string;
+    /** CSI index (e.g. `.csi`). Works for all genome sizes. */
+    csiUrl: string;
     /** Optional trix search indexes */
     ixUrl?: string;
     ixxUrl?: string;

@@ -9,7 +9,7 @@ The GeneViewer expects **BGZF-compressed** files with indexes:
 | Asset | Required format | Index files |
 |-------|-----------------|-------------|
 | FASTA | `.fasta.gz` or `.fa.gz` (BGZF) | `.fai`, `.gzi` |
-| GFF | `.gff.bgz` (BGZF) | `.tbi` |
+| GFF | `.gff.bgz` (BGZF) | `.csi` |
 
 If your files are uncompressed, see [Generating indexes](../../README.md#generating-indexes) in the main README.
 
@@ -27,7 +27,7 @@ sample-data/
 └── gff3_files/
     └── BU_ATCC8492/
         ├── *.gff.bgz              # BGZF GFF (create from .gff)
-        ├── *.gff.bgz.tbi          # tabix index
+        ├── *.gff.bgz.csi          # CSI index
         └── trix/                  # Optional: JBrowse text search indexes
 ```
 
@@ -43,7 +43,7 @@ VITE_FASTA_GZ_URL=http://localhost:5173/sample-data/fasta_files/BU_ATCC8492VPI00
 VITE_FASTA_FAI_URL=http://localhost:5173/sample-data/fasta_files/BU_ATCC8492VPI0062_NT5002.1/BU_ATCC8492VPI0062_NT5002.1.fa.gz.fai
 VITE_FASTA_GZI_URL=http://localhost:5173/sample-data/fasta_files/BU_ATCC8492VPI0062_NT5002.1/BU_ATCC8492VPI0062_NT5002.1.fa.gz.gzi
 VITE_GFF_BGZ_URL=http://localhost:5173/sample-data/gff3_files/BU_ATCC8492/BU_ATCC8492_annotations.gff.bgz
-VITE_GFF_TBI_URL=http://localhost:5173/sample-data/gff3_files/BU_ATCC8492/BU_ATCC8492_annotations.gff.bgz.tbi
+VITE_GFF_CSI_URL=http://localhost:5173/sample-data/gff3_files/BU_ATCC8492/BU_ATCC8492_annotations.gff.bgz.csi
 VITE_ESSENTIALITY_CSV_URL=http://localhost:5173/sample-data/essentiality/essentiality_sample.csv
 ```
 

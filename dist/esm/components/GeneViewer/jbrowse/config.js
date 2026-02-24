@@ -33,7 +33,10 @@ export function buildTracksConfig(props) {
     const adapterConfig = {
         type: 'Gff3TabixWithEssentialityAdapter',
         gffGzLocation: { uri: gff.gffUrl },
-        index: { location: { uri: gff.tbiUrl } },
+        index: {
+            indexType: 'CSI',
+            location: { uri: gff.csiUrl },
+        },
         essentialityCsvUrl: showEssentiality && (essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvUrl) ? essentiality.csvUrl : '',
         csvJoinColumn: (_a = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvJoinColumn) !== null && _a !== void 0 ? _a : 'locus_tag',
         csvStatusColumn: (_b = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvStatusColumn) !== null && _b !== void 0 ? _b : 'essentiality',

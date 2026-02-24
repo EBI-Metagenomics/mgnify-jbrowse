@@ -59,7 +59,7 @@ function App() {
           name: 'Annotations',
           gff: {
             gffUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz',
-            tbiUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz.tbi',
+            csiUrl: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz.csi',
           },
         }}
         ui={{
@@ -100,7 +100,7 @@ The Vite template already includes `react` and `react-dom`. After `npm install m
 
 Peer dependencies (`@jbrowse/sv-core`) are installed automatically by npm 7+.
 
-> **Note:** MGnify API URLs may require the analysis ID and file names for your specific dataset. Check the [MGnify API](https://www.ebi.ac.uk/metagenomics/api/v1/) for your analysis's file endpoints. Index files (`.fai`, `.gzi`, `.tbi`) must be available at the same base URL.
+> **Note:** MGnify API URLs may require the analysis ID and file names for your specific dataset. Check the [MGnify API](https://www.ebi.ac.uk/metagenomics/api/v1/) for your analysis's file endpoints. Index files (`.fai`, `.gzi`, `.csi`) must be available at the same base URL.
 
 ---
 
@@ -180,6 +180,8 @@ function App() {
         fasta: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz',
         fai: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz.fai',
         gzi: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA.fasta.gz.gzi',
+        gff: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz',
+        csi: 'https://www.ebi.ac.uk/metagenomics/api/v1/analyses/MGYA00516474/file/ERZ1049444_FASTA_annotations.gff.bgz.csi',
       }}
     />
   );
@@ -193,12 +195,12 @@ function App() {
 | Asset | Format | Index |
 |-------|--------|-------|
 | FASTA | BGZF-compressed (`.fasta.gz`) | `.fai` + `.gzi` |
-| GFF | BGZF-compressed (`.gff.bgz`) | `.tbi` |
+| GFF | BGZF-compressed (`.gff.bgz`) | `.csi` |
 
 **Index files:**
 
 - FASTA: `samtools faidx genome.fasta.gz` → `.fai`, `.gzi`
-- GFF: `tabix -p gff annotations.gff.bgz` → `.tbi`
+- GFF: `tabix -p gff -C annotations.gff.bgz` → `.csi`
 
 See [Generating indexes](../README.md#generating-indexes) in the main README for details.
 

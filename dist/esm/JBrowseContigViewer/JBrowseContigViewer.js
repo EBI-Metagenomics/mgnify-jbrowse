@@ -9,7 +9,7 @@ import getTracks from './tracks';
 const JBrowseContigViewer = ({ genomeMeta, fileLocations, }) => {
     const [viewState, setViewState] = useState(null);
     const assembly = useMemo(() => getAssembly2(genomeMeta, fileLocations), [genomeMeta, fileLocations]);
-    const tracks = useMemo(() => getTracks(genomeMeta, ''), [genomeMeta]);
+    const tracks = useMemo(() => getTracks(genomeMeta, fileLocations), [genomeMeta, fileLocations]);
     const sessionConfig = useMemo(() => getDefaultSessionConfig(genomeMeta, assembly, tracks), [genomeMeta, assembly, tracks]);
     const config = useMemo(() => ({
         assemblies: [assembly],

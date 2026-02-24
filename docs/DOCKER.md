@@ -26,7 +26,7 @@ docker build \
   --build-arg VITE_FASTA_FAI_URL=https://.../genome.fasta.gz.fai \
   --build-arg VITE_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi \
   --build-arg VITE_GFF_BGZ_URL=https://.../annotations.gff.bgz \
-  --build-arg VITE_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi \
+  --build-arg VITE_GFF_CSI_URL=https://.../annotations.gff.bgz.csi \
   -t mgnify-jbrowse .
 ```
 

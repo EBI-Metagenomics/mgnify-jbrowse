@@ -12,7 +12,7 @@ export default function App() {
   const gziUrl = import.meta.env.VITE_FASTA_GZI_URL || "";
 
   const gffUrl = import.meta.env.VITE_GFF_BGZ_URL || "";
-  const tbiUrl = import.meta.env.VITE_GFF_TBI_URL || "";
+  const csiUrl = import.meta.env.VITE_GFF_CSI_URL || "";
   const ixUrl = import.meta.env.VITE_GFF_IX_URL || undefined;
   const ixxUrl = import.meta.env.VITE_GFF_IXX_URL || undefined;
   const metaUrl = import.meta.env.VITE_GFF_META_URL || undefined;
@@ -26,7 +26,7 @@ export default function App() {
     </header>
   );
 
-  if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !tbiUrl) {
+  if (!fastaUrl || !faiUrl || !gziUrl || !gffUrl || !csiUrl) {
     return (
       <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
         {header}
@@ -39,7 +39,7 @@ VITE_FASTA_GZ_URL=https://.../genome.fasta.gz
 VITE_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
 VITE_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
 VITE_GFF_BGZ_URL=https://.../annotations.gff.bgz
-VITE_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
+VITE_GFF_CSI_URL=https://.../annotations.gff.bgz.csi
 # Optional:
 VITE_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
 VITE_GFF_IX_URL=https://.../annotations.gff.bgz.ix
@@ -60,7 +60,7 @@ VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
         }}
         annotation={{
           name: "Structural Annotation",
-          gff: { gffUrl, tbiUrl, ixUrl, ixxUrl, metaUrl },
+          gff: { gffUrl, csiUrl, ixUrl, ixxUrl, metaUrl },
         }}
         essentiality={{
           enabled: true,

@@ -19,7 +19,8 @@ export interface GffFeature {
 }
 export declare function queryGffRegion(opts: {
     gffUrl: string;
-    tbiUrl: string;
+    /** CSI index URL (.csi) */
+    csiUrl: string;
     refName: string;
     start: number;
     end: number;

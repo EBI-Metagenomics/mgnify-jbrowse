@@ -45,7 +45,7 @@ import '@fontsource/roboto';
 
 <GeneViewer
   assembly={{ name: 'my-assembly', fasta: { fastaUrl, faiUrl, gziUrl } }}
-  annotation={{ gff: { gffUrl, tbiUrl } }}
+  annotation={{ gff: { gffUrl, csiUrl } }}
   heightPx={600}
 />
 ```
@@ -102,7 +102,7 @@ function App() {
       }}
       annotation={{
         name: 'Annotations',
-        gff: { gffUrl: '...', tbiUrl: '...' },
+        gff: { gffUrl: '...', csiUrl: '...' },
       }}
       essentiality={{
         enabled: true,
@@ -136,6 +136,8 @@ function App() {
         fasta: 'https://.../genome.fasta.gz',
         fai: 'https://.../genome.fasta.gz.fai',
         gzi: 'https://.../genome.fasta.gz.gzi',
+        gff: 'https://.../annotations.gff.bgz',
+        csi: 'https://.../annotations.gff.bgz.csi',
       }}
     />
   );
@@ -182,7 +184,7 @@ VITE_FASTA_GZ_URL=https://.../genome.fasta.gz
 VITE_FASTA_FAI_URL=https://.../genome.fasta.gz.fai
 VITE_FASTA_GZI_URL=https://.../genome.fasta.gz.gzi
 VITE_GFF_BGZ_URL=https://.../annotations.gff.bgz
-VITE_GFF_TBI_URL=https://.../annotations.gff.bgz.tbi
+VITE_GFF_CSI_URL=https://.../annotations.gff.bgz.csi
 
 # Optional (defaults to public/sample-data/essentiality/essentiality_sample.csv):
 VITE_ESSENTIALITY_CSV_URL=https://.../essentiality.csv
@@ -288,8 +290,8 @@ bgzip BU_ATCC8492_annotations.gff
 # 2a. Sort it in case required 
 gunzip -c BU_ATCC8492_annotations.gff.gz | sort -k1,1 -k4,4n | bgzip -c > BU_ATCC8492_annotations.gff.gz
 
-# 3. Tabix index
-tabix -p gff BU_ATCC8492_annotations.gff.gz
+# 3. CSI index
+tabix -p gff -C BU_ATCC8492_annotations.gff.gz
 
 # 4. JBrowse text index (optional, for search)
 jbrowse text-index --file BU_ATCC8492_annotations.gff.gz --exclude none --attributes interpro,pfam,eggnog

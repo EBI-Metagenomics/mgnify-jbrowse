@@ -7,6 +7,12 @@ export interface JBrowseContigViewerProps {
         fasta: string;
         fai: string;
         gzi: string;
+        gff: string;
+        csi: string;
+        /** Optional trix text search indexes */
+        ix?: string;
+        ixx?: string;
+        meta?: string;
     };
 }
 declare const JBrowseContigViewer: React.FC<JBrowseContigViewerProps>;

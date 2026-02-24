@@ -40,7 +40,7 @@ async function queryGffRegion(opts) {
     var _a;
     const file = new tabix_1.TabixIndexedFile({
         filehandle: new generic_filehandle_1.RemoteFile(opts.gffUrl),
-        tbiFilehandle: new generic_filehandle_1.RemoteFile(opts.tbiUrl),
+        csiFilehandle: new generic_filehandle_1.RemoteFile(opts.csiUrl),
     });
     const wantedTypes = ((_a = opts.featureTypes) === null || _a === void 0 ? void 0 : _a.length) ? new Set(opts.featureTypes) : null;
     const features = [];

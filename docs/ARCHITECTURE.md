@@ -12,7 +12,7 @@ To prepare assembly and annotation data for the GeneViewer or JBrowseContigViewe
 |------|---------|--------|
 | **bgzip** | BGZF compression (part of `htslib` / `samtools`) | `.fasta.gz`, `.gff.bgz` |
 | **samtools** | FASTA index for BGZF FASTA | `.fai`, `.gzi` |
-| **tabix** | GFF index for region queries | `.tbi` |
+| **tabix** | GFF index for region queries | `.csi` |
 | **jbrowse** | Optional trix text-search index | `.ix`, `.ixx`, `_meta.json` |
 
 ### FASTA preparation
@@ -26,7 +26,7 @@ samtools faidx genome.fasta.gz        # → genome.fasta.gz.fai, genome.fasta.gz
 
 ```bash
 bgzip annotations.gff                 # → annotations.gff.bgz
-tabix -p gff annotations.gff.bgz     # → annotations.gff.bgz.tbi
+tabix -p gff -C annotations.gff.bgz  # → annotations.gff.bgz.csi
 ```
 
 ### Optional: JBrowse text search (ix/ixx)
@@ -129,7 +129,7 @@ src/
 ## GeneViewer – Data flow
 
 1. **Assembly + annotation**  
-   Props define assembly (FASTA/FAI/GZI) and annotation (GFF/TBI). Config is built in `jbrowse/config.ts` (assembly, tracks, default session).
+   Props define assembly (FASTA/FAI/GZI) and annotation (GFF/CSI). Config is built in `jbrowse/config.ts` (assembly, tracks, default session).
 
 2. **JBrowse view state**  
    Created once in `GeneViewer` via `createViewState({ config, plugins: [GeneViewerJBrowsePlugin] })`. The plugin registers JEXL functions (`getGeneColor`, `getEssentialityIcon`, etc.) that run inside the track renderer.

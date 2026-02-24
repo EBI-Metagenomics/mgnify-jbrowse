@@ -15,6 +15,12 @@ export interface JBrowseContigViewerProps {
     fasta: string;
     fai: string;
     gzi: string;
+    gff: string;
+    csi: string;
+    /** Optional trix text search indexes */
+    ix?: string;
+    ixx?: string;
+    meta?: string;
   };
 }
 
@@ -27,7 +33,7 @@ const JBrowseContigViewer: React.FC<JBrowseContigViewerProps> = ({
     () => getAssembly2(genomeMeta, fileLocations),
     [genomeMeta, fileLocations],
   );
-  const tracks = useMemo(() => getTracks(genomeMeta, ''), [genomeMeta]);
+  const tracks = useMemo(() => getTracks(genomeMeta, fileLocations), [genomeMeta, fileLocations]);
   const sessionConfig = useMemo(
     () => getDefaultSessionConfig(genomeMeta, assembly, tracks),
     [genomeMeta, assembly, tracks],

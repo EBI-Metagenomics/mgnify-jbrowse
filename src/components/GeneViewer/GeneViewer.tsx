@@ -98,7 +98,7 @@ export default function GeneViewer(props: GeneViewerProps) {
       try {
         const feats = await queryGffRegion({
           gffUrl: props.annotation.gff.gffUrl,
-          tbiUrl: props.annotation.gff.tbiUrl,
+          csiUrl: props.annotation.gff.csiUrl,
           refName,
           start: qStart,
           end: qEnd,
@@ -114,7 +114,7 @@ export default function GeneViewer(props: GeneViewerProps) {
       token.cancelled = true;
       window.clearTimeout(id);
     };
-  }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.tbiUrl, genesInViewTypes]);
+  }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.csiUrl, genesInViewTypes]);
 
   const { selectedFeature, selectedLocusTag, selectedEssentiality } = useGeneViewerSelection(
     selectedGeneId,

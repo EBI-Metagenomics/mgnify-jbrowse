@@ -38,7 +38,10 @@ export function buildTracksConfig(props: GeneViewerProps) {
   const adapterConfig = {
     type: 'Gff3TabixWithEssentialityAdapter' as const,
     gffGzLocation: { uri: gff.gffUrl },
-    index: { location: { uri: gff.tbiUrl } },
+    index: {
+      indexType: 'CSI' as const,
+      location: { uri: gff.csiUrl },
+    },
     essentialityCsvUrl: showEssentiality && essentiality?.csvUrl ? essentiality.csvUrl : '',
     csvJoinColumn: essentiality?.csvJoinColumn ?? 'locus_tag',
     csvStatusColumn: essentiality?.csvStatusColumn ?? 'essentiality',
