@@ -21,7 +21,7 @@ const useGeneViewerHideDrawer_1 = require("./hooks/useGeneViewerHideDrawer");
 const useGeneViewerResizeSync_1 = require("./hooks/useGeneViewerResizeSync");
 const useGeneViewerSelection_1 = require("./hooks/useGeneViewerSelection");
 function GeneViewer(props) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     const [viewState, setViewState] = (0, react_1.useState)(null);
     const [error, setError] = (0, react_1.useState)(null);
     const [essentialityEnabled, setEssentialityEnabled] = (0, react_1.useState)(!!((_a = props.essentiality) === null || _a === void 0 ? void 0 : _a.enabled));
@@ -55,7 +55,7 @@ function GeneViewer(props) {
         }
         return featureId;
     }, [joinAttribute]);
-    const genesInViewTypes = (0, react_1.useMemo)(() => { var _a, _b; return (_b = (_a = props.ui) === null || _a === void 0 ? void 0 : _a.genesInViewTypes) !== null && _b !== void 0 ? _b : ['gene']; }, [(_h = props.ui) === null || _h === void 0 ? void 0 : _h.genesInViewTypes]);
+    const genesInViewTypes = (0, react_1.useMemo)(() => { var _a, _b; return (_b = (_a = props.ui) === null || _a === void 0 ? void 0 : _a.genesInViewTypes) !== null && _b !== void 0 ? _b : ['CDS']; }, [(_h = props.ui) === null || _h === void 0 ? void 0 : _h.genesInViewTypes]);
     // Keep internal essentiality-enabled in sync with props changes
     (0, react_1.useEffect)(() => {
         var _a;
@@ -118,7 +118,7 @@ function GeneViewer(props) {
             window.clearTimeout(id);
         };
     }, [visibleRegion, resolvedGffAdapterMode, gff.gffUrl, gff.csiUrl, genesInViewTypes]);
-    const { selectedFeature, selectedLocusTag, selectedEssentiality } = (0, useGeneViewerSelection_1.useGeneViewerSelection)(selectedGeneId, genesInView, joinAttribute, essentialityEnabled, essentialityIndex, (_o = props.essentiality) === null || _o === void 0 ? void 0 : _o.colorMap);
+    const { selectedFeatures, selectedLocusTag, selectedEssentiality } = (0, useGeneViewerSelection_1.useGeneViewerSelection)(selectedGeneId, genesInView, joinAttribute, essentialityEnabled, essentialityIndex, (_o = props.essentiality) === null || _o === void 0 ? void 0 : _o.colorMap);
     // Keep JEXL context up to date (selection + essentiality) so track highlight (blue bar) works.
     // useLayoutEffect so context is set before paint and before track re-render from reload().
     (0, react_1.useLayoutEffect)(() => {
@@ -139,7 +139,7 @@ function GeneViewer(props) {
         joinAttr: joinAttribute,
     });
     (0, useGeneViewerTrackRefresh_1.useGeneViewerTrackRefresh)(viewState, selectedLocusTag, selectedGeneId, essentialityIndex, essentialityEnabled);
-    (0, useGeneViewerTableNav_1.useGeneViewerTableNav)(viewState, selectedFeature, lastTableSelectionTimeRef, hasNavigatedThisTableClickRef);
+    (0, useGeneViewerTableNav_1.useGeneViewerTableNav)(viewState, (_q = selectedFeatures[0]) !== null && _q !== void 0 ? _q : null, lastTableSelectionTimeRef, hasNavigatedThisTableClickRef);
     const assemblyConfig = (0, react_1.useMemo)(() => (0, config_1.buildAssemblyConfig)(props), [props]);
     const tracksConfig = (0, react_1.useMemo)(() => (0, config_1.buildTracksConfig)(props, {
         adapterMode: resolvedGffAdapterMode !== null && resolvedGffAdapterMode !== void 0 ? resolvedGffAdapterMode : 'tabix',
@@ -156,10 +156,10 @@ function GeneViewer(props) {
         resolveToLocusTag,
         joinAttribute,
     });
-    const showLegends = (_r = (_q = props.ui) === null || _q === void 0 ? void 0 : _q.showLegends) !== null && _r !== void 0 ? _r : true;
-    const showPanel = (_t = (_s = props.ui) === null || _s === void 0 ? void 0 : _s.showFeaturePanel) !== null && _t !== void 0 ? _t : true;
-    const showTable = (_v = (_u = props.ui) === null || _u === void 0 ? void 0 : _u.showGenesInViewTable) !== null && _v !== void 0 ? _v : true;
-    const heightPx = (_w = props.heightPx) !== null && _w !== void 0 ? _w : constants_1.DEFAULT_VIEWER_HEIGHT_PX;
+    const showLegends = (_s = (_r = props.ui) === null || _r === void 0 ? void 0 : _r.showLegends) !== null && _s !== void 0 ? _s : true;
+    const showPanel = (_u = (_t = props.ui) === null || _t === void 0 ? void 0 : _t.showFeaturePanel) !== null && _u !== void 0 ? _u : true;
+    const showTable = (_w = (_v = props.ui) === null || _v === void 0 ? void 0 : _v.showGenesInViewTable) !== null && _w !== void 0 ? _w : true;
+    const heightPx = (_x = props.heightPx) !== null && _x !== void 0 ? _x : constants_1.DEFAULT_VIEWER_HEIGHT_PX;
     (0, useGeneViewerHideDrawer_1.useGeneViewerHideDrawer)(viewState, jbrowseContainerRef);
     (0, useGeneViewerResizeSync_1.useGeneViewerResizeSync)(viewState, jbrowseContainerRef);
     return ((0, jsx_runtime_1.jsxs)("div", { style: { width: '100%', border: `1px solid ${constants_1.COLORS.border}`, borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? ((0, jsx_runtime_1.jsx)(components_1.GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, background: constants_1.COLORS.errorBg, borderBottom: `1px solid ${constants_1.COLORS.errorBorder}`, color: constants_1.COLORS.errorText }, children: error })) : null, (0, jsx_runtime_1.jsxs)("div", { style: {
@@ -170,9 +170,10 @@ function GeneViewer(props) {
                     borderBottom: `1px solid ${constants_1.COLORS.border}`,
                 }, title: "Shows current selection \u2013 click a gene in the track or a row in the table", children: ["Selected: ", selectedLocusTag !== null && selectedLocusTag !== void 0 ? selectedLocusTag : '—', " (genes in view: ", genesInView.length, ")"] }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${constants_1.FEATURE_PANEL_WIDTH_PX}px` : '1fr', width: '100%' }, children: [(0, jsx_runtime_1.jsx)("div", { ref: jbrowseContainerRef, style: { width: '100%', minWidth: 0, minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }, children: viewState ? ((0, jsx_runtime_1.jsx)(react_app2_1.JBrowseApp, { viewState: viewState })) : ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, color: constants_1.COLORS.textMuted }, children: "Loading JBrowse\u2026" })) }), showPanel ? ((0, jsx_runtime_1.jsx)("div", { style: {
                             borderLeft: `1px solid ${constants_1.COLORS.border}`,
-                            minHeight: heightPx,
-                            overflow: 'visible',
-                        }, children: (0, jsx_runtime_1.jsx)(components_1.FeaturePanel, { feature: selectedFeature, essentiality: selectedEssentiality }) })) : null] }), showTable ? ((0, jsx_runtime_1.jsxs)("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${constants_1.FEATURE_PANEL_WIDTH_PX}px` : '1fr' }, children: [(0, jsx_runtime_1.jsx)("div", { children: (0, jsx_runtime_1.jsx)(components_1.GenesInViewTable, { features: genesInView, selectedId: selectedLocusTag, onSelect: (id) => {
+                            height: heightPx,
+                            overflowY: 'auto',
+                            overflowX: 'hidden',
+                        }, children: (0, jsx_runtime_1.jsx)(components_1.FeaturePanel, { features: selectedFeatures, essentiality: selectedEssentiality }) })) : null] }), showTable ? ((0, jsx_runtime_1.jsxs)("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${constants_1.FEATURE_PANEL_WIDTH_PX}px` : '1fr' }, children: [(0, jsx_runtime_1.jsx)("div", { children: (0, jsx_runtime_1.jsx)(components_1.GenesInViewTable, { features: genesInView, selectedId: selectedLocusTag, onSelect: (id) => {
                                 lastTableSelectionTimeRef.current = Date.now();
                                 hasNavigatedThisTableClickRef.current = false;
                                 if (typeof window !== 'undefined')

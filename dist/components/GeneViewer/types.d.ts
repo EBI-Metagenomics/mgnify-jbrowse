@@ -61,7 +61,7 @@ export interface GeneViewerUiConfig {
     showGenesInViewTable?: boolean;
     /**
      * Which GFF feature types should appear in the table.
-     * Defaults to `['gene']`.
+     * Defaults to `['CDS']` for broader format support (prokaryotes often have CDS only).
      */
     genesInViewTypes?: string[];
 }

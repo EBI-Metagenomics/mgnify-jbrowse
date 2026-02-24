@@ -1,6 +1,6 @@
 import type { GffFeature } from '../gff';
 export declare function FeaturePanel(props: {
-    feature: GffFeature | null;
+    features: GffFeature[];
     essentiality?: {
         status: string;
         color: string;

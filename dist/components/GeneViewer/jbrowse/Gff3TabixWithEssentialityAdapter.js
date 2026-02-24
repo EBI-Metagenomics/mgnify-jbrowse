@@ -102,9 +102,14 @@ class Gff3TabixWithEssentialityAdapter extends Gff3TabixAdapter_1.default {
             var _a;
             await this.configure(opts);
             const joinAttr = (_a = this.getConf('featureJoinAttribute')) !== null && _a !== void 0 ? _a : 'locus_tag';
+            const excludeTypes = new Set(['region', 'chromosome', 'contig']);
             super
                 .getFeatures(query, opts)
-                .pipe((0, operators_1.map)((feature) => {
+                .pipe((0, operators_1.filter)((feature) => {
+                var _a, _b, _c;
+                const type = String((_c = (_b = (_a = feature).get) === null || _b === void 0 ? void 0 : _b.call(_a, 'type')) !== null && _c !== void 0 ? _c : '').toLowerCase();
+                return !excludeTypes.has(type);
+            }), (0, operators_1.map)((feature) => {
                 var _a, _b, _c, _d, _e, _f, _g, _h;
                 const locus = getLocusTag(feature, joinAttr);
                 const status = locus

@@ -1,22 +1,14 @@
 import { useMemo } from 'react';
 import { getColorForEssentiality, getIconForEssentiality, normalizeEssentialityStatus, } from '../essentiality';
 export function useGeneViewerSelection(selectedGeneId, genesInView, joinAttribute, essentialityEnabled, essentialityIndex, essentialityColorMap) {
-    const selectedFeature = useMemo(() => {
-        var _a;
+    /** All features (CDS) for the selected gene. When user selects a gene, we show all its CDS. */
+    const selectedFeatures = useMemo(() => {
         if (!selectedGeneId)
-            return null;
+            return [];
         const norm = String(selectedGeneId).trim();
         if (!norm)
-            return null;
-        const exact = genesInView.find((f) => {
-            var _a, _b, _c, _d, _e, _f;
-            const attrs = (_a = f.attributes) !== null && _a !== void 0 ? _a : {};
-            const id = String((_f = (_e = (_d = (_c = (_b = attrs[joinAttribute]) !== null && _b !== void 0 ? _b : attrs.locus_tag) !== null && _c !== void 0 ? _c : f.locus_tag) !== null && _d !== void 0 ? _d : attrs.ID) !== null && _e !== void 0 ? _e : f.id) !== null && _f !== void 0 ? _f : '').trim();
-            return id === norm;
-        });
-        if (exact)
-            return exact;
-        return ((_a = genesInView.find((f) => {
+            return [];
+        return genesInView.filter((f) => {
             var _a, _b, _c, _d, _e, _f;
             const attrs = (_a = f.attributes) !== null && _a !== void 0 ? _a : {};
             const locus = String((_f = (_e = (_d = (_c = (_b = attrs[joinAttribute]) !== null && _b !== void 0 ? _b : attrs.locus_tag) !== null && _c !== void 0 ? _c : f.locus_tag) !== null && _d !== void 0 ? _d : attrs.ID) !== null && _e !== void 0 ? _e : f.id) !== null && _f !== void 0 ? _f : '').trim();
@@ -25,16 +17,17 @@ export function useGeneViewerSelection(selectedGeneId, genesInView, joinAttribut
             if (attrs.ID === norm || attrs.locus_tag === norm)
                 return true;
             return Object.values(attrs).some((v) => String(v).trim() === norm);
-        })) !== null && _a !== void 0 ? _a : null);
+        });
     }, [selectedGeneId, genesInView, joinAttribute]);
     const selectedLocusTag = useMemo(() => {
         var _a, _b, _c, _d, _e, _f;
-        if (selectedFeature) {
-            const attrs = (_a = selectedFeature.attributes) !== null && _a !== void 0 ? _a : {};
-            return String((_f = (_e = (_d = (_c = (_b = attrs[joinAttribute]) !== null && _b !== void 0 ? _b : attrs.locus_tag) !== null && _c !== void 0 ? _c : selectedFeature.locus_tag) !== null && _d !== void 0 ? _d : attrs.ID) !== null && _e !== void 0 ? _e : selectedFeature.id) !== null && _f !== void 0 ? _f : '').trim();
+        if (selectedFeatures.length > 0) {
+            const f = selectedFeatures[0];
+            const attrs = (_a = f.attributes) !== null && _a !== void 0 ? _a : {};
+            return String((_f = (_e = (_d = (_c = (_b = attrs[joinAttribute]) !== null && _b !== void 0 ? _b : attrs.locus_tag) !== null && _c !== void 0 ? _c : f.locus_tag) !== null && _d !== void 0 ? _d : attrs.ID) !== null && _e !== void 0 ? _e : f.id) !== null && _f !== void 0 ? _f : '').trim();
         }
         return selectedGeneId ? String(selectedGeneId).trim() : null;
-    }, [selectedFeature, selectedGeneId, joinAttribute]);
+    }, [selectedFeatures, selectedGeneId, joinAttribute]);
     const selectedEssentiality = useMemo(() => {
         if (!essentialityEnabled || !selectedLocusTag)
             return null;
@@ -48,5 +41,5 @@ export function useGeneViewerSelection(selectedGeneId, genesInView, joinAttribut
             icon: getIconForEssentiality(status),
         };
     }, [essentialityEnabled, selectedLocusTag, essentialityIndex, essentialityColorMap]);
-    return { selectedFeature, selectedLocusTag, selectedEssentiality };
+    return { selectedFeatures, selectedLocusTag, selectedEssentiality };
 }

@@ -15,45 +15,37 @@ export function useGeneViewerSelection(
   essentialityIndex: Map<string, string>,
   essentialityColorMap?: EssentialityColorMap,
 ) {
-  const selectedFeature = useMemo(() => {
-    if (!selectedGeneId) return null;
+  /** All features (CDS) for the selected gene. When user selects a gene, we show all its CDS. */
+  const selectedFeatures = useMemo(() => {
+    if (!selectedGeneId) return [];
     const norm = String(selectedGeneId).trim();
-    if (!norm) return null;
-    const exact = genesInView.find((f) => {
+    if (!norm) return [];
+    return genesInView.filter((f) => {
       const attrs = f.attributes ?? {};
-      const id = String(
+      const locus = String(
         attrs[joinAttribute] ?? attrs.locus_tag ?? f.locus_tag ?? attrs.ID ?? f.id ?? '',
       ).trim();
-      return id === norm;
+      if (locus === norm) return true;
+      if (attrs.ID === norm || attrs.locus_tag === norm) return true;
+      return Object.values(attrs).some((v) => String(v).trim() === norm);
     });
-    if (exact) return exact;
-    return (
-      genesInView.find((f) => {
-        const attrs = f.attributes ?? {};
-        const locus = String(
-          attrs[joinAttribute] ?? attrs.locus_tag ?? f.locus_tag ?? attrs.ID ?? f.id ?? '',
-        ).trim();
-        if (locus === norm) return true;
-        if (attrs.ID === norm || attrs.locus_tag === norm) return true;
-        return Object.values(attrs).some((v) => String(v).trim() === norm);
-      }) ?? null
-    );
   }, [selectedGeneId, genesInView, joinAttribute]);
 
   const selectedLocusTag = useMemo(() => {
-    if (selectedFeature) {
-      const attrs = selectedFeature.attributes ?? {};
+    if (selectedFeatures.length > 0) {
+      const f = selectedFeatures[0];
+      const attrs = f.attributes ?? {};
       return String(
         attrs[joinAttribute] ??
           attrs.locus_tag ??
-          selectedFeature.locus_tag ??
+          f.locus_tag ??
           attrs.ID ??
-          selectedFeature.id ??
+          f.id ??
           '',
       ).trim();
     }
     return selectedGeneId ? String(selectedGeneId).trim() : null;
-  }, [selectedFeature, selectedGeneId, joinAttribute]);
+  }, [selectedFeatures, selectedGeneId, joinAttribute]);
 
   const selectedEssentiality = useMemo(() => {
     if (!essentialityEnabled || !selectedLocusTag) return null;
@@ -67,5 +59,5 @@ export function useGeneViewerSelection(
     };
   }, [essentialityEnabled, selectedLocusTag, essentialityIndex, essentialityColorMap]);
 
-  return { selectedFeature, selectedLocusTag, selectedEssentiality };
+  return { selectedFeatures, selectedLocusTag, selectedEssentiality };
 }

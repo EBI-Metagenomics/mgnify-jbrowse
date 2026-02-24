@@ -74,7 +74,7 @@ VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
           showLegends: true,
           showFeaturePanel: true,
           showGenesInViewTable: true,
-          genesInViewTypes: ["gene"],
+          genesInViewTypes: ["CDS"],
         }}
         heightPx={720}
       />

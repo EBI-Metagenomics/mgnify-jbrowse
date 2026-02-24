@@ -7,7 +7,7 @@ import Gff3TabixAdapter from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/Gff3Tabi
 import Gff3TabixConfigSchema from '@jbrowse/plugin-gff3/esm/Gff3TabixAdapter/configSchema';
 import SimpleFeature from '@jbrowse/core/util/simpleFeature';
 import { ObservableCreate } from '@jbrowse/core/util/rxjs';
-import { map } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { buildEssentialityIndexFromCsv, getIconForEssentiality, normalizeEssentialityStatus } from '../essentiality';
 export const configSchema = ConfigurationSchema('Gff3TabixWithEssentialityAdapter', {
     essentialityCsvUrl: {
@@ -96,9 +96,14 @@ export default class Gff3TabixWithEssentialityAdapter extends Gff3TabixAdapter {
             var _a;
             await this.configure(opts);
             const joinAttr = (_a = this.getConf('featureJoinAttribute')) !== null && _a !== void 0 ? _a : 'locus_tag';
+            const excludeTypes = new Set(['region', 'chromosome', 'contig']);
             super
                 .getFeatures(query, opts)
-                .pipe(map((feature) => {
+                .pipe(filter((feature) => {
+                var _a, _b, _c;
+                const type = String((_c = (_b = (_a = feature).get) === null || _b === void 0 ? void 0 : _b.call(_a, 'type')) !== null && _c !== void 0 ? _c : '').toLowerCase();
+                return !excludeTypes.has(type);
+            }), map((feature) => {
                 var _a, _b, _c, _d, _e, _f, _g, _h;
                 const locus = getLocusTag(feature, joinAttr);
                 const status = locus

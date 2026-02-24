@@ -9,7 +9,7 @@ import Gff3AdapterConfigSchema from '@jbrowse/plugin-gff3/esm/Gff3Adapter/config
 import SimpleFeature, { type Feature } from '@jbrowse/core/util/simpleFeature';
 import { ObservableCreate } from '@jbrowse/core/util/rxjs';
 import type { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { buildEssentialityIndexFromCsv, getIconForEssentiality, normalizeEssentialityStatus } from '../essentiality';
 import type { EssentialityStatus } from '../types';
 
@@ -96,9 +96,14 @@ export default class Gff3WithEssentialityAdapter extends Gff3Adapter {
     return ObservableCreate(async (observer) => {
       await this.ensureEssentialityLoaded();
       const joinAttr = (this.getConf('featureJoinAttribute') as string) ?? 'locus_tag';
+      const excludeTypes = new Set(['region', 'chromosome', 'contig']);
       super
         .getFeatures(query, opts)
         .pipe(
+          filter((feature: Feature) => {
+            const type = String((feature as any).get?.('type') ?? '').toLowerCase();
+            return !excludeTypes.has(type);
+          }),
           map((feature: Feature) => {
             const locus = getLocusTag(feature, joinAttr);
             const status: EssentialityStatus = locus

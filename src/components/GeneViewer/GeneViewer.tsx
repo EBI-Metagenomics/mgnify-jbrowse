@@ -72,7 +72,7 @@ export default function GeneViewer(props: GeneViewerProps) {
     return featureId;
   }, [joinAttribute]);
   const genesInViewTypes = useMemo(
-    () => props.ui?.genesInViewTypes ?? ['gene'],
+    () => props.ui?.genesInViewTypes ?? ['CDS'],
     [props.ui?.genesInViewTypes],
   );
 
@@ -135,7 +135,7 @@ export default function GeneViewer(props: GeneViewerProps) {
     };
   }, [visibleRegion, resolvedGffAdapterMode, gff.gffUrl, gff.csiUrl, genesInViewTypes]);
 
-  const { selectedFeature, selectedLocusTag, selectedEssentiality } = useGeneViewerSelection(
+  const { selectedFeatures, selectedLocusTag, selectedEssentiality } = useGeneViewerSelection(
     selectedGeneId,
     genesInView,
     joinAttribute,
@@ -174,7 +174,7 @@ export default function GeneViewer(props: GeneViewerProps) {
 
   useGeneViewerTableNav(
     viewState,
-    selectedFeature,
+    selectedFeatures[0] ?? null,
     lastTableSelectionTimeRef,
     hasNavigatedThisTableClickRef,
   );
@@ -266,11 +266,12 @@ export default function GeneViewer(props: GeneViewerProps) {
           <div
             style={{
               borderLeft: `1px solid ${COLORS.border}`,
-              minHeight: heightPx,
-              overflow: 'visible',
+              height: heightPx,
+              overflowY: 'auto',
+              overflowX: 'hidden',
             }}
           >
-            <FeaturePanel feature={selectedFeature} essentiality={selectedEssentiality} />
+            <FeaturePanel features={selectedFeatures} essentiality={selectedEssentiality} />
           </div>
         ) : null}
       </div>

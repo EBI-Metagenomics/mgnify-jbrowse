@@ -14,7 +14,7 @@ export function GenesInViewTable(props: {
   return (
     <div style={{ borderTop: `1px solid ${COLORS.border}` }}>
       <div style={{ padding: '8px 12px', fontWeight: 800, fontSize }}>
-        Genes in view ({features.length})
+        Features in view ({features.length})
       </div>
       <div style={{ overflow: 'visible' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize }}>
