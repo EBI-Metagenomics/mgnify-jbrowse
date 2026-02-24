@@ -16,6 +16,7 @@ import { useGeneViewerZoom } from './hooks/useGeneViewerZoom';
 import { useGeneViewerTrackRefresh } from './hooks/useGeneViewerTrackRefresh';
 import { useGeneViewerTableNav } from './hooks/useGeneViewerTableNav';
 import { useGeneViewerHideDrawer } from './hooks/useGeneViewerHideDrawer';
+import { useGeneViewerResizeSync } from './hooks/useGeneViewerResizeSync';
 import { useGeneViewerSelection } from './hooks/useGeneViewerSelection';
 export default function GeneViewer(props) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
@@ -158,13 +159,14 @@ export default function GeneViewer(props) {
     const showTable = (_v = (_u = props.ui) === null || _u === void 0 ? void 0 : _u.showGenesInViewTable) !== null && _v !== void 0 ? _v : true;
     const heightPx = (_w = props.heightPx) !== null && _w !== void 0 ? _w : DEFAULT_VIEWER_HEIGHT_PX;
     useGeneViewerHideDrawer(viewState, jbrowseContainerRef);
-    return (_jsxs("div", { style: { border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? (_jsx(GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? (_jsx("div", { style: { padding: 12, background: COLORS.errorBg, borderBottom: `1px solid ${COLORS.errorBorder}`, color: COLORS.errorText }, children: error })) : null, _jsxs("div", { style: {
+    useGeneViewerResizeSync(viewState, jbrowseContainerRef);
+    return (_jsxs("div", { style: { width: '100%', border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? (_jsx(GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? (_jsx("div", { style: { padding: 12, background: COLORS.errorBg, borderBottom: `1px solid ${COLORS.errorBorder}`, color: COLORS.errorText }, children: error })) : null, _jsxs("div", { style: {
                     padding: '4px 12px',
                     fontSize: 11,
                     color: COLORS.textMuted,
                     background: COLORS.backgroundLight,
                     borderBottom: `1px solid ${COLORS.border}`,
-                }, title: "Shows current selection \u2013 click a gene in the track or a row in the table", children: ["Selected: ", selectedLocusTag !== null && selectedLocusTag !== void 0 ? selectedLocusTag : '—', " (genes in view: ", genesInView.length, ")"] }), _jsxs("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${FEATURE_PANEL_WIDTH_PX}px` : '1fr' }, children: [_jsx("div", { ref: jbrowseContainerRef, style: { minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }, children: viewState ? (_jsx(JBrowseApp, { viewState: viewState })) : (_jsx("div", { style: { padding: 12, color: COLORS.textMuted }, children: "Loading JBrowse\u2026" })) }), showPanel ? (_jsx("div", { style: {
+                }, title: "Shows current selection \u2013 click a gene in the track or a row in the table", children: ["Selected: ", selectedLocusTag !== null && selectedLocusTag !== void 0 ? selectedLocusTag : '—', " (genes in view: ", genesInView.length, ")"] }), _jsxs("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${FEATURE_PANEL_WIDTH_PX}px` : '1fr', width: '100%' }, children: [_jsx("div", { ref: jbrowseContainerRef, style: { width: '100%', minWidth: 0, minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }, children: viewState ? (_jsx(JBrowseApp, { viewState: viewState })) : (_jsx("div", { style: { padding: 12, color: COLORS.textMuted }, children: "Loading JBrowse\u2026" })) }), showPanel ? (_jsx("div", { style: {
                             borderLeft: `1px solid ${COLORS.border}`,
                             minHeight: heightPx,
                             overflow: 'visible',

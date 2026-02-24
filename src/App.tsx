@@ -52,7 +52,7 @@ VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
   }
 
   return (
-    <div style={{ padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
+    <div style={{ width: '100%', padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
       {header}
       <GeneViewer
         assembly={{

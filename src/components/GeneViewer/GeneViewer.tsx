@@ -24,6 +24,7 @@ import { useGeneViewerZoom } from './hooks/useGeneViewerZoom';
 import { useGeneViewerTrackRefresh } from './hooks/useGeneViewerTrackRefresh';
 import { useGeneViewerTableNav } from './hooks/useGeneViewerTableNav';
 import { useGeneViewerHideDrawer } from './hooks/useGeneViewerHideDrawer';
+import { useGeneViewerResizeSync } from './hooks/useGeneViewerResizeSync';
 import { useGeneViewerSelection } from './hooks/useGeneViewerSelection';
 
 type ViewModel = ReturnType<typeof createViewState>;
@@ -218,9 +219,10 @@ export default function GeneViewer(props: GeneViewerProps) {
   const heightPx = props.heightPx ?? DEFAULT_VIEWER_HEIGHT_PX;
 
   useGeneViewerHideDrawer(viewState, jbrowseContainerRef);
+  useGeneViewerResizeSync(viewState, jbrowseContainerRef);
 
   return (
-    <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: 'hidden' }}>
+    <div style={{ width: '100%', border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: 'hidden' }}>
       {showLegends ? (
         <GeneViewerLegends
           essentiality={props.essentiality}
@@ -248,10 +250,10 @@ export default function GeneViewer(props: GeneViewerProps) {
         Selected: {selectedLocusTag ?? '—'} (genes in view: {genesInView.length})
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: showPanel ? `1fr ${FEATURE_PANEL_WIDTH_PX}px` : '1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: showPanel ? `1fr ${FEATURE_PANEL_WIDTH_PX}px` : '1fr', width: '100%' }}>
         <div
           ref={jbrowseContainerRef}
-          style={{ minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }}
+          style={{ width: '100%', minWidth: 0, minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }}
         >
           {viewState ? (
             <JBrowseApp viewState={viewState} />

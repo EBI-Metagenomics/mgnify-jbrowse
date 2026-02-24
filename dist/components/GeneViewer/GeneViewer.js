@@ -18,6 +18,7 @@ const useGeneViewerZoom_1 = require("./hooks/useGeneViewerZoom");
 const useGeneViewerTrackRefresh_1 = require("./hooks/useGeneViewerTrackRefresh");
 const useGeneViewerTableNav_1 = require("./hooks/useGeneViewerTableNav");
 const useGeneViewerHideDrawer_1 = require("./hooks/useGeneViewerHideDrawer");
+const useGeneViewerResizeSync_1 = require("./hooks/useGeneViewerResizeSync");
 const useGeneViewerSelection_1 = require("./hooks/useGeneViewerSelection");
 function GeneViewer(props) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
@@ -160,13 +161,14 @@ function GeneViewer(props) {
     const showTable = (_v = (_u = props.ui) === null || _u === void 0 ? void 0 : _u.showGenesInViewTable) !== null && _v !== void 0 ? _v : true;
     const heightPx = (_w = props.heightPx) !== null && _w !== void 0 ? _w : constants_1.DEFAULT_VIEWER_HEIGHT_PX;
     (0, useGeneViewerHideDrawer_1.useGeneViewerHideDrawer)(viewState, jbrowseContainerRef);
-    return ((0, jsx_runtime_1.jsxs)("div", { style: { border: `1px solid ${constants_1.COLORS.border}`, borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? ((0, jsx_runtime_1.jsx)(components_1.GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, background: constants_1.COLORS.errorBg, borderBottom: `1px solid ${constants_1.COLORS.errorBorder}`, color: constants_1.COLORS.errorText }, children: error })) : null, (0, jsx_runtime_1.jsxs)("div", { style: {
+    (0, useGeneViewerResizeSync_1.useGeneViewerResizeSync)(viewState, jbrowseContainerRef);
+    return ((0, jsx_runtime_1.jsxs)("div", { style: { width: '100%', border: `1px solid ${constants_1.COLORS.border}`, borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? ((0, jsx_runtime_1.jsx)(components_1.GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, background: constants_1.COLORS.errorBg, borderBottom: `1px solid ${constants_1.COLORS.errorBorder}`, color: constants_1.COLORS.errorText }, children: error })) : null, (0, jsx_runtime_1.jsxs)("div", { style: {
                     padding: '4px 12px',
                     fontSize: 11,
                     color: constants_1.COLORS.textMuted,
                     background: constants_1.COLORS.backgroundLight,
                     borderBottom: `1px solid ${constants_1.COLORS.border}`,
-                }, title: "Shows current selection \u2013 click a gene in the track or a row in the table", children: ["Selected: ", selectedLocusTag !== null && selectedLocusTag !== void 0 ? selectedLocusTag : '—', " (genes in view: ", genesInView.length, ")"] }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${constants_1.FEATURE_PANEL_WIDTH_PX}px` : '1fr' }, children: [(0, jsx_runtime_1.jsx)("div", { ref: jbrowseContainerRef, style: { minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }, children: viewState ? ((0, jsx_runtime_1.jsx)(react_app2_1.JBrowseApp, { viewState: viewState })) : ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, color: constants_1.COLORS.textMuted }, children: "Loading JBrowse\u2026" })) }), showPanel ? ((0, jsx_runtime_1.jsx)("div", { style: {
+                }, title: "Shows current selection \u2013 click a gene in the track or a row in the table", children: ["Selected: ", selectedLocusTag !== null && selectedLocusTag !== void 0 ? selectedLocusTag : '—', " (genes in view: ", genesInView.length, ")"] }), (0, jsx_runtime_1.jsxs)("div", { style: { display: 'grid', gridTemplateColumns: showPanel ? `1fr ${constants_1.FEATURE_PANEL_WIDTH_PX}px` : '1fr', width: '100%' }, children: [(0, jsx_runtime_1.jsx)("div", { ref: jbrowseContainerRef, style: { width: '100%', minWidth: 0, minHeight: heightPx, maxHeight: heightPx, overflow: 'hidden' }, children: viewState ? ((0, jsx_runtime_1.jsx)(react_app2_1.JBrowseApp, { viewState: viewState })) : ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, color: constants_1.COLORS.textMuted }, children: "Loading JBrowse\u2026" })) }), showPanel ? ((0, jsx_runtime_1.jsx)("div", { style: {
                             borderLeft: `1px solid ${constants_1.COLORS.border}`,
                             minHeight: heightPx,
                             overflow: 'visible',
