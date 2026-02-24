@@ -16,6 +16,7 @@ export default function App() {
   const ixUrl = import.meta.env.VITE_GFF_IX_URL || undefined;
   const ixxUrl = import.meta.env.VITE_GFF_IXX_URL || undefined;
   const metaUrl = import.meta.env.VITE_GFF_META_URL || undefined;
+  const gffAdapterMode = (import.meta.env.VITE_GFF_ADAPTER_MODE as "tabix" | "plain" | "auto") || undefined;
 
   const essentialityCsvUrl = import.meta.env.VITE_ESSENTIALITY_CSV_URL || "/sample-data/essentiality/essentiality_sample.csv";
 
@@ -60,7 +61,7 @@ VITE_GFF_META_URL=https://.../annotations.gff.bgz_meta.json`}
         }}
         annotation={{
           name: "Structural Annotation",
-          gff: { gffUrl, csiUrl, ixUrl, ixxUrl, metaUrl },
+          gff: { gffUrl, csiUrl, ixUrl, ixxUrl, metaUrl, gffAdapterMode },
         }}
         essentiality={{
           enabled: true,

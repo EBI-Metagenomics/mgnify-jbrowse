@@ -1,4 +1,4 @@
-import type { GeneViewerProps } from '../types';
+import type { GeneViewerProps, GffAdapterMode } from '../types';
 
 export function buildAssemblyConfig(props: GeneViewerProps) {
   const { assembly } = props;
@@ -17,9 +17,15 @@ export function buildAssemblyConfig(props: GeneViewerProps) {
   };
 }
 
-export function buildTracksConfig(props: GeneViewerProps) {
+export function buildTracksConfig(
+  props: GeneViewerProps,
+  opts?: { adapterMode?: GffAdapterMode },
+) {
   const { assembly, annotation, essentiality } = props;
   const gff = annotation.gff;
+
+  const adapterMode = opts?.adapterMode ?? gff.gffAdapterMode ?? 'auto';
+  const usePlainAdapter = adapterMode === 'plain';
 
   const labelFields = [
     'Name',
@@ -34,19 +40,28 @@ export function buildTracksConfig(props: GeneViewerProps) {
     ? `${labelJexl} + ' ' + getEssentialityIcon(feature)`
     : labelJexl;
 
-  // Always use Gff3TabixWithEssentialityAdapter: provides locus_tag as feature id (METT-style) for click handling
-  const adapterConfig = {
-    type: 'Gff3TabixWithEssentialityAdapter' as const,
-    gffGzLocation: { uri: gff.gffUrl },
-    index: {
-      indexType: 'CSI' as const,
-      location: { uri: gff.csiUrl },
-    },
+  const essentialityFields = {
     essentialityCsvUrl: showEssentiality && essentiality?.csvUrl ? essentiality.csvUrl : '',
     csvJoinColumn: essentiality?.csvJoinColumn ?? 'locus_tag',
     csvStatusColumn: essentiality?.csvStatusColumn ?? 'essentiality',
     featureJoinAttribute: essentiality?.featureJoinAttribute ?? 'locus_tag',
   };
+
+  const adapterConfig = usePlainAdapter
+    ? {
+        type: 'Gff3WithEssentialityAdapter' as const,
+        gffLocation: { uri: gff.gffUrl },
+        ...essentialityFields,
+      }
+    : {
+        type: 'Gff3TabixWithEssentialityAdapter' as const,
+        gffGzLocation: { uri: gff.gffUrl },
+        index: {
+          indexType: 'CSI' as const,
+          location: { uri: gff.csiUrl },
+        },
+        ...essentialityFields,
+      };
 
   const tracks: any[] = [
     {

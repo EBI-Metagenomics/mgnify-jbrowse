@@ -13,13 +13,14 @@ const useGeneViewerSessionSync_1 = require("./hooks/useGeneViewerSessionSync");
 const useGeneViewerClickHandler_1 = require("./hooks/useGeneViewerClickHandler");
 const useJBrowseVisibleRegion_1 = require("./hooks/useJBrowseVisibleRegion");
 const useGeneViewerInit_1 = require("./hooks/useGeneViewerInit");
+const useResolvedGffAdapterMode_1 = require("./hooks/useResolvedGffAdapterMode");
 const useGeneViewerZoom_1 = require("./hooks/useGeneViewerZoom");
 const useGeneViewerTrackRefresh_1 = require("./hooks/useGeneViewerTrackRefresh");
 const useGeneViewerTableNav_1 = require("./hooks/useGeneViewerTableNav");
 const useGeneViewerHideDrawer_1 = require("./hooks/useGeneViewerHideDrawer");
 const useGeneViewerSelection_1 = require("./hooks/useGeneViewerSelection");
 function GeneViewer(props) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     const [viewState, setViewState] = (0, react_1.useState)(null);
     const [error, setError] = (0, react_1.useState)(null);
     const [essentialityEnabled, setEssentialityEnabled] = (0, react_1.useState)(!!((_a = props.essentiality) === null || _a === void 0 ? void 0 : _a.enabled));
@@ -35,6 +36,9 @@ function GeneViewer(props) {
     const initialZoomAppliedRef = (0, react_1.useRef)(false);
     const jbrowseContainerRef = (0, react_1.useRef)(null);
     const joinAttribute = (_e = (_d = props.essentiality) === null || _d === void 0 ? void 0 : _d.featureJoinAttribute) !== null && _e !== void 0 ? _e : 'locus_tag';
+    const gff = props.annotation.gff;
+    const gffAdapterMode = (_f = gff.gffAdapterMode) !== null && _f !== void 0 ? _f : 'auto';
+    const resolvedGffAdapterMode = (0, useResolvedGffAdapterMode_1.useResolvedGffAdapterMode)(gff.gffUrl, gffAdapterMode, (_g = gff.smallGffThresholdBytes) !== null && _g !== void 0 ? _g : 256000);
     // Resolve a clicked feature id (e.g. GFF ID or locus_tag) to the canonical locus_tag for selection/panel/table
     const resolveToLocusTag = (0, react_1.useCallback)((featureId, features) => {
         var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -50,17 +54,17 @@ function GeneViewer(props) {
         }
         return featureId;
     }, [joinAttribute]);
-    const genesInViewTypes = (0, react_1.useMemo)(() => { var _a, _b; return (_b = (_a = props.ui) === null || _a === void 0 ? void 0 : _a.genesInViewTypes) !== null && _b !== void 0 ? _b : ['gene']; }, [(_f = props.ui) === null || _f === void 0 ? void 0 : _f.genesInViewTypes]);
+    const genesInViewTypes = (0, react_1.useMemo)(() => { var _a, _b; return (_b = (_a = props.ui) === null || _a === void 0 ? void 0 : _a.genesInViewTypes) !== null && _b !== void 0 ? _b : ['gene']; }, [(_h = props.ui) === null || _h === void 0 ? void 0 : _h.genesInViewTypes]);
     // Keep internal essentiality-enabled in sync with props changes
     (0, react_1.useEffect)(() => {
         var _a;
         setEssentialityEnabled(!!((_a = props.essentiality) === null || _a === void 0 ? void 0 : _a.enabled));
-    }, [(_g = props.essentiality) === null || _g === void 0 ? void 0 : _g.enabled]);
+    }, [(_j = props.essentiality) === null || _j === void 0 ? void 0 : _j.enabled]);
     const { essentialityIndex, essentialityError } = (0, useGeneViewerEssentiality_1.useGeneViewerEssentiality)({
         enabled: essentialityEnabled,
-        csvUrl: (_h = props.essentiality) === null || _h === void 0 ? void 0 : _h.csvUrl,
-        csvJoinColumn: (_j = props.essentiality) === null || _j === void 0 ? void 0 : _j.csvJoinColumn,
-        csvStatusColumn: (_k = props.essentiality) === null || _k === void 0 ? void 0 : _k.csvStatusColumn,
+        csvUrl: (_k = props.essentiality) === null || _k === void 0 ? void 0 : _k.csvUrl,
+        csvJoinColumn: (_l = props.essentiality) === null || _l === void 0 ? void 0 : _l.csvJoinColumn,
+        csvStatusColumn: (_m = props.essentiality) === null || _m === void 0 ? void 0 : _m.csvStatusColumn,
     });
     (0, react_1.useEffect)(() => {
         if (essentialityError)
@@ -70,7 +74,7 @@ function GeneViewer(props) {
     const visibleRegion = (0, useJBrowseVisibleRegion_1.useJBrowseVisibleRegion)(viewState, constants_1.VISIBLE_REGION_POLL_MS);
     const gffQueryAbortRef = (0, react_1.useRef)({ cancelled: false });
     (0, react_1.useEffect)(() => {
-        if (!visibleRegion)
+        if (!visibleRegion || resolvedGffAdapterMode === null)
             return;
         const { refName, start, end } = visibleRegion;
         const regionLen = end - start;
@@ -83,14 +87,22 @@ function GeneViewer(props) {
         const run = async () => {
             var _a;
             try {
-                const feats = await (0, gff_1.queryGffRegion)({
-                    gffUrl: props.annotation.gff.gffUrl,
-                    csiUrl: props.annotation.gff.csiUrl,
-                    refName,
-                    start: qStart,
-                    end: qEnd,
-                    featureTypes: genesInViewTypes,
-                });
+                const feats = resolvedGffAdapterMode === 'plain'
+                    ? await (0, gff_1.queryGffRegionFromPlainGff)({
+                        gffUrl: gff.gffUrl,
+                        refName,
+                        start: qStart,
+                        end: qEnd,
+                        featureTypes: genesInViewTypes,
+                    })
+                    : await (0, gff_1.queryGffRegion)({
+                        gffUrl: gff.gffUrl,
+                        csiUrl: gff.csiUrl,
+                        refName,
+                        start: qStart,
+                        end: qEnd,
+                        featureTypes: genesInViewTypes,
+                    });
                 if (!token.cancelled)
                     setGenesInView(feats);
             }
@@ -104,8 +116,8 @@ function GeneViewer(props) {
             token.cancelled = true;
             window.clearTimeout(id);
         };
-    }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.csiUrl, genesInViewTypes]);
-    const { selectedFeature, selectedLocusTag, selectedEssentiality } = (0, useGeneViewerSelection_1.useGeneViewerSelection)(selectedGeneId, genesInView, joinAttribute, essentialityEnabled, essentialityIndex, (_l = props.essentiality) === null || _l === void 0 ? void 0 : _l.colorMap);
+    }, [visibleRegion, resolvedGffAdapterMode, gff.gffUrl, gff.csiUrl, genesInViewTypes]);
+    const { selectedFeature, selectedLocusTag, selectedEssentiality } = (0, useGeneViewerSelection_1.useGeneViewerSelection)(selectedGeneId, genesInView, joinAttribute, essentialityEnabled, essentialityIndex, (_o = props.essentiality) === null || _o === void 0 ? void 0 : _o.colorMap);
     // Keep JEXL context up to date (selection + essentiality) so track highlight (blue bar) works.
     // useLayoutEffect so context is set before paint and before track re-render from reload().
     (0, react_1.useLayoutEffect)(() => {
@@ -118,7 +130,7 @@ function GeneViewer(props) {
             featureJoinAttribute: joinAttribute,
             highlightColor: constants_1.COLORS.highlight,
         });
-    }, [selectedLocusTag, selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, (_m = props.essentiality) === null || _m === void 0 ? void 0 : _m.colorMap]);
+    }, [selectedLocusTag, selectedGeneId, essentialityEnabled, essentialityIndex, joinAttribute, (_p = props.essentiality) === null || _p === void 0 ? void 0 : _p.colorMap]);
     (0, useGeneViewerSessionSync_1.useGeneViewerSessionSync)({
         viewState,
         lastTableSelectionTimeRef,
@@ -128,8 +140,11 @@ function GeneViewer(props) {
     (0, useGeneViewerTrackRefresh_1.useGeneViewerTrackRefresh)(viewState, selectedLocusTag, selectedGeneId, essentialityIndex, essentialityEnabled);
     (0, useGeneViewerTableNav_1.useGeneViewerTableNav)(viewState, selectedFeature, lastTableSelectionTimeRef, hasNavigatedThisTableClickRef);
     const assemblyConfig = (0, react_1.useMemo)(() => (0, config_1.buildAssemblyConfig)(props), [props]);
-    const tracksConfig = (0, react_1.useMemo)(() => (0, config_1.buildTracksConfig)(props), [props]);
-    (0, useGeneViewerInit_1.useGeneViewerInit)(props, assemblyConfig, tracksConfig, setViewState, setError, initialZoomAppliedRef);
+    const tracksConfig = (0, react_1.useMemo)(() => (0, config_1.buildTracksConfig)(props, {
+        adapterMode: resolvedGffAdapterMode !== null && resolvedGffAdapterMode !== void 0 ? resolvedGffAdapterMode : 'tabix',
+    }), [props, resolvedGffAdapterMode]);
+    const initReady = gffAdapterMode !== 'auto' || resolvedGffAdapterMode !== null;
+    (0, useGeneViewerInit_1.useGeneViewerInit)(props, assemblyConfig, tracksConfig, setViewState, setError, initialZoomAppliedRef, initReady);
     (0, useGeneViewerZoom_1.useGeneViewerZoom)(viewState, props, initialZoomAppliedRef);
     (0, useGeneViewerClickHandler_1.useGeneViewerClickHandler)({
         viewState,
@@ -140,10 +155,10 @@ function GeneViewer(props) {
         resolveToLocusTag,
         joinAttribute,
     });
-    const showLegends = (_p = (_o = props.ui) === null || _o === void 0 ? void 0 : _o.showLegends) !== null && _p !== void 0 ? _p : true;
-    const showPanel = (_r = (_q = props.ui) === null || _q === void 0 ? void 0 : _q.showFeaturePanel) !== null && _r !== void 0 ? _r : true;
-    const showTable = (_t = (_s = props.ui) === null || _s === void 0 ? void 0 : _s.showGenesInViewTable) !== null && _t !== void 0 ? _t : true;
-    const heightPx = (_u = props.heightPx) !== null && _u !== void 0 ? _u : constants_1.DEFAULT_VIEWER_HEIGHT_PX;
+    const showLegends = (_r = (_q = props.ui) === null || _q === void 0 ? void 0 : _q.showLegends) !== null && _r !== void 0 ? _r : true;
+    const showPanel = (_t = (_s = props.ui) === null || _s === void 0 ? void 0 : _s.showFeaturePanel) !== null && _t !== void 0 ? _t : true;
+    const showTable = (_v = (_u = props.ui) === null || _u === void 0 ? void 0 : _u.showGenesInViewTable) !== null && _v !== void 0 ? _v : true;
+    const heightPx = (_w = props.heightPx) !== null && _w !== void 0 ? _w : constants_1.DEFAULT_VIEWER_HEIGHT_PX;
     (0, useGeneViewerHideDrawer_1.useGeneViewerHideDrawer)(viewState, jbrowseContainerRef);
     return ((0, jsx_runtime_1.jsxs)("div", { style: { border: `1px solid ${constants_1.COLORS.border}`, borderRadius: 10, overflow: 'hidden' }, children: [showLegends ? ((0, jsx_runtime_1.jsx)(components_1.GeneViewerLegends, { essentiality: props.essentiality, essentialityEnabled: essentialityEnabled, onToggleEssentiality: (next) => setEssentialityEnabled(next) })) : null, error ? ((0, jsx_runtime_1.jsx)("div", { style: { padding: 12, background: constants_1.COLORS.errorBg, borderBottom: `1px solid ${constants_1.COLORS.errorBorder}`, color: constants_1.COLORS.errorText }, children: error })) : null, (0, jsx_runtime_1.jsxs)("div", { style: {
                     padding: '4px 12px',

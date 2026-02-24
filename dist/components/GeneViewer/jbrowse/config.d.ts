@@ -1,4 +1,4 @@
-import type { GeneViewerProps } from '../types';
+import type { GeneViewerProps, GffAdapterMode } from '../types';
 export declare function buildAssemblyConfig(props: GeneViewerProps): {
     name: string;
     sequence: {
@@ -18,7 +18,9 @@ export declare function buildAssemblyConfig(props: GeneViewerProps): {
         };
     };
 };
-export declare function buildTracksConfig(props: GeneViewerProps): any[];
+export declare function buildTracksConfig(props: GeneViewerProps, opts?: {
+    adapterMode?: GffAdapterMode;
+}): any[];
 export declare function buildDefaultSessionConfig(opts: {
     assemblyName: string;
     initialRefName: string;

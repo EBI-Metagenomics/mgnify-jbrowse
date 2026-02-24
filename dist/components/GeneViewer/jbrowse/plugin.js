@@ -30,6 +30,7 @@ exports.setGeneViewerJexlContext = void 0;
 const Plugin_1 = __importDefault(require("@jbrowse/core/Plugin"));
 const pluggableElementTypes_1 = require("@jbrowse/core/pluggableElementTypes");
 const Gff3TabixWithEssentialityAdapter_1 = require("./Gff3TabixWithEssentialityAdapter");
+const Gff3WithEssentialityAdapter_1 = require("./Gff3WithEssentialityAdapter");
 const essentiality_1 = require("../essentiality");
 const constants_1 = require("../constants");
 const ctx = {
@@ -128,6 +129,12 @@ class GeneViewerJBrowsePlugin extends Plugin_1.default {
             displayName: 'GFF3 tabix with essentiality',
             configSchema: Gff3TabixWithEssentialityAdapter_1.configSchema,
             getAdapterClass: () => Promise.resolve().then(() => __importStar(require('./Gff3TabixWithEssentialityAdapter'))).then((r) => r.default),
+        }));
+        pluginManager.addAdapterType(() => new pluggableElementTypes_1.AdapterType({
+            name: 'Gff3WithEssentialityAdapter',
+            displayName: 'GFF3 whole-file with essentiality (for small GFFs)',
+            configSchema: Gff3WithEssentialityAdapter_1.configSchema,
+            getAdapterClass: () => Promise.resolve().then(() => __importStar(require('./Gff3WithEssentialityAdapter'))).then((r) => r.default),
         }));
         const resolveEssentialityStatus = (feature) => {
             const featureId = getLocusTagFromFeature(feature) || null;

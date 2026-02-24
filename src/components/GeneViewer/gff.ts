@@ -1,5 +1,6 @@
 import { RemoteFile } from 'generic-filehandle';
 import { TabixIndexedFile } from '@gmod/tabix';
+import { unzip } from '@gmod/bgzf-filehandle';
 
 export interface FaiRefInfo {
   refName: string;
@@ -108,6 +109,82 @@ export async function queryGffRegion(opts: {
       locus_tag,
     });
   });
+
+  return features;
+}
+
+/** Fetch Content-Length via HEAD. Returns null if unavailable. */
+export async function fetchGffContentLength(gffUrl: string): Promise<number | null> {
+  try {
+    const res = await fetch(gffUrl, { method: 'HEAD' });
+    const len = res.headers.get('content-length');
+    if (len) {
+      const n = parseInt(len, 10);
+      if (Number.isFinite(n)) return n;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+/** Fetch whole GFF, parse, and filter by region. Use for small GFFs when tabix would hit 416. */
+export async function queryGffRegionFromPlainGff(opts: {
+  gffUrl: string;
+  refName: string;
+  start: number;
+  end: number;
+  featureTypes?: string[];
+}): Promise<GffFeature[]> {
+  const res = await fetch(opts.gffUrl);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch GFF: ${res.status} ${res.statusText}`);
+  }
+  let buf = new Uint8Array(await res.arrayBuffer());
+  if (buf.length >= 3 && buf[0] === 31 && buf[1] === 139 && buf[2] === 8) {
+    buf = await unzip(buf);
+  }
+  const text = new TextDecoder().decode(buf);
+  const wantedTypes = opts.featureTypes?.length ? new Set(opts.featureTypes) : null;
+  const features: GffFeature[] = [];
+
+  for (const line of text.split(/\r?\n/)) {
+    if (!line || line.startsWith('#')) continue;
+    const parts = line.split('\t');
+    if (parts.length < 9) continue;
+
+    const [refName, source, type, start1, end1, score, strandChar, phase, attrString] = parts;
+    if (refName !== opts.refName) continue;
+    if (wantedTypes && !wantedTypes.has(type)) continue;
+
+    const start = Math.max(0, Number(start1) - 1);
+    const end = Math.max(start, Number(end1));
+
+    if (end <= opts.start || start >= opts.end) continue;
+
+    const strand: 1 | -1 | 0 =
+      strandChar === '+'
+        ? 1
+        : strandChar === '-'
+          ? -1
+          : 0;
+
+    const attributes = parseGffAttributes(attrString);
+
+    features.push({
+      refName,
+      source,
+      type,
+      start,
+      end,
+      score,
+      strand,
+      phase,
+      attributes,
+      id: attributes.ID,
+      locus_tag: attributes.locus_tag,
+    });
+  }
 
   return features;
 }

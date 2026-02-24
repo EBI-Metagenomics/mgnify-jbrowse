@@ -26,3 +26,13 @@ export declare function queryGffRegion(opts: {
     end: number;
     featureTypes?: string[];
 }): Promise<GffFeature[]>;
+/** Fetch Content-Length via HEAD. Returns null if unavailable. */
+export declare function fetchGffContentLength(gffUrl: string): Promise<number | null>;
+/** Fetch whole GFF, parse, and filter by region. Use for small GFFs when tabix would hit 416. */
+export declare function queryGffRegionFromPlainGff(opts: {
+    gffUrl: string;
+    refName: string;
+    start: number;
+    end: number;
+    featureTypes?: string[];
+}): Promise<GffFeature[]>;

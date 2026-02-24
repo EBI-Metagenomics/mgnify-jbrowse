@@ -14,10 +14,12 @@ export function buildAssemblyConfig(props) {
         },
     };
 }
-export function buildTracksConfig(props) {
-    var _a, _b, _c, _d;
+export function buildTracksConfig(props, opts) {
+    var _a, _b, _c, _d, _e, _f;
     const { assembly, annotation, essentiality } = props;
     const gff = annotation.gff;
+    const adapterMode = (_b = (_a = opts === null || opts === void 0 ? void 0 : opts.adapterMode) !== null && _a !== void 0 ? _a : gff.gffAdapterMode) !== null && _b !== void 0 ? _b : 'auto';
+    const usePlainAdapter = adapterMode === 'plain';
     const labelFields = [
         'Name',
         'gene',
@@ -29,24 +31,32 @@ export function buildTracksConfig(props) {
     const labelWithEss = showEssentiality
         ? `${labelJexl} + ' ' + getEssentialityIcon(feature)`
         : labelJexl;
-    // Always use Gff3TabixWithEssentialityAdapter: provides locus_tag as feature id (METT-style) for click handling
-    const adapterConfig = {
-        type: 'Gff3TabixWithEssentialityAdapter',
-        gffGzLocation: { uri: gff.gffUrl },
-        index: {
-            indexType: 'CSI',
-            location: { uri: gff.csiUrl },
-        },
+    const essentialityFields = {
         essentialityCsvUrl: showEssentiality && (essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvUrl) ? essentiality.csvUrl : '',
-        csvJoinColumn: (_a = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvJoinColumn) !== null && _a !== void 0 ? _a : 'locus_tag',
-        csvStatusColumn: (_b = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvStatusColumn) !== null && _b !== void 0 ? _b : 'essentiality',
-        featureJoinAttribute: (_c = essentiality === null || essentiality === void 0 ? void 0 : essentiality.featureJoinAttribute) !== null && _c !== void 0 ? _c : 'locus_tag',
+        csvJoinColumn: (_c = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvJoinColumn) !== null && _c !== void 0 ? _c : 'locus_tag',
+        csvStatusColumn: (_d = essentiality === null || essentiality === void 0 ? void 0 : essentiality.csvStatusColumn) !== null && _d !== void 0 ? _d : 'essentiality',
+        featureJoinAttribute: (_e = essentiality === null || essentiality === void 0 ? void 0 : essentiality.featureJoinAttribute) !== null && _e !== void 0 ? _e : 'locus_tag',
     };
+    const adapterConfig = usePlainAdapter
+        ? {
+            type: 'Gff3WithEssentialityAdapter',
+            gffLocation: { uri: gff.gffUrl },
+            ...essentialityFields,
+        }
+        : {
+            type: 'Gff3TabixWithEssentialityAdapter',
+            gffGzLocation: { uri: gff.gffUrl },
+            index: {
+                indexType: 'CSI',
+                location: { uri: gff.csiUrl },
+            },
+            ...essentialityFields,
+        };
     const tracks = [
         {
             type: 'FeatureTrack',
             trackId: 'gene_features',
-            name: (_d = annotation.name) !== null && _d !== void 0 ? _d : 'Genes',
+            name: (_f = annotation.name) !== null && _f !== void 0 ? _f : 'Genes',
             assemblyNames: [assembly.name],
             category: ['Annotations'],
             adapter: adapterConfig,

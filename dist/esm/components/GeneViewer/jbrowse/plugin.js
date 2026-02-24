@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin';
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes';
 import { configSchema as Gff3TabixWithEssentialityConfigSchema, } from './Gff3TabixWithEssentialityAdapter';
+import { configSchema as Gff3WithEssentialityConfigSchema, } from './Gff3WithEssentialityAdapter';
 import { DEFAULT_ESSENTIALITY_COLOR_MAP, getColorForEssentiality, getIconForEssentiality, normalizeEssentialityStatus, } from '../essentiality';
 import { COLORS } from '../constants';
 const ctx = {
@@ -98,6 +99,12 @@ export default class GeneViewerJBrowsePlugin extends Plugin {
             displayName: 'GFF3 tabix with essentiality',
             configSchema: Gff3TabixWithEssentialityConfigSchema,
             getAdapterClass: () => import('./Gff3TabixWithEssentialityAdapter').then((r) => r.default),
+        }));
+        pluginManager.addAdapterType(() => new AdapterType({
+            name: 'Gff3WithEssentialityAdapter',
+            displayName: 'GFF3 whole-file with essentiality (for small GFFs)',
+            configSchema: Gff3WithEssentialityConfigSchema,
+            getAdapterClass: () => import('./Gff3WithEssentialityAdapter').then((r) => r.default),
         }));
         const resolveEssentialityStatus = (feature) => {
             const featureId = getLocusTagFromFeature(feature) || null;

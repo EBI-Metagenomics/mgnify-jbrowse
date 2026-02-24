@@ -5,6 +5,9 @@ import { AdapterType } from '@jbrowse/core/pluggableElementTypes';
 import Gff3TabixWithEssentialityAdapter, {
   configSchema as Gff3TabixWithEssentialityConfigSchema,
 } from './Gff3TabixWithEssentialityAdapter';
+import {
+  configSchema as Gff3WithEssentialityConfigSchema,
+} from './Gff3WithEssentialityAdapter';
 import type { EssentialityColorMap, EssentialityStatus } from '../types';
 import {
   DEFAULT_ESSENTIALITY_COLOR_MAP,
@@ -120,6 +123,17 @@ export default class GeneViewerJBrowsePlugin extends Plugin {
           configSchema: Gff3TabixWithEssentialityConfigSchema,
           getAdapterClass: () =>
             import('./Gff3TabixWithEssentialityAdapter').then((r) => r.default),
+        }),
+    );
+
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'Gff3WithEssentialityAdapter',
+          displayName: 'GFF3 whole-file with essentiality (for small GFFs)',
+          configSchema: Gff3WithEssentialityConfigSchema,
+          getAdapterClass: () =>
+            import('./Gff3WithEssentialityAdapter').then((r) => r.default),
         }),
     );
 

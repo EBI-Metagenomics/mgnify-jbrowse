@@ -11,8 +11,10 @@ const plugin_1 = __importDefault(require("../jbrowse/plugin"));
 const config_1 = require("../jbrowse/config");
 const gff_1 = require("../gff");
 const parseUtils_1 = require("../utils/parseUtils");
-function useGeneViewerInit(props, assemblyConfig, tracksConfig, setViewState, setError, initialZoomAppliedRef) {
+function useGeneViewerInit(props, assemblyConfig, tracksConfig, setViewState, setError, initialZoomAppliedRef, initReady = true) {
     (0, react_1.useEffect)(() => {
+        if (!initReady)
+            return;
         initialZoomAppliedRef.current = false;
         let cancelled = false;
         async function init() {
@@ -81,6 +83,7 @@ function useGeneViewerInit(props, assemblyConfig, tracksConfig, setViewState, se
             cancelled = true;
         };
     }, [
+        initReady,
         props.initialLocation,
         props.initialRegionBp,
         props.assembly.fasta.faiUrl,

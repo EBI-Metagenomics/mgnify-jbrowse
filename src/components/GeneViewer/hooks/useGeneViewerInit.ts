@@ -16,8 +16,11 @@ export function useGeneViewerInit(
   setViewState: (v: ViewModel | null) => void,
   setError: (v: string | null) => void,
   initialZoomAppliedRef: React.MutableRefObject<boolean>,
+  initReady = true,
 ) {
   useEffect(() => {
+    if (!initReady) return;
+
     initialZoomAppliedRef.current = false;
     let cancelled = false;
 
@@ -89,6 +92,7 @@ export function useGeneViewerInit(
       cancelled = true;
     };
   }, [
+    initReady,
     props.initialLocation,
     props.initialRegionBp,
     props.assembly.fasta.faiUrl,

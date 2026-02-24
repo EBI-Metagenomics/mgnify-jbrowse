@@ -88,7 +88,8 @@ src/
 │   └── jbrowse/
 │       ├── config.ts
 │       ├── plugin.ts
-│       └── Gff3TabixWithEssentialityAdapter.ts
+│       ├── Gff3TabixWithEssentialityAdapter.ts
+│       └── Gff3WithEssentialityAdapter.ts   # Whole-file adapter for small GFFs
 │
 ├── App.tsx                       # Demo app (uses GeneViewer)
 └── index.tsx                     # App entry

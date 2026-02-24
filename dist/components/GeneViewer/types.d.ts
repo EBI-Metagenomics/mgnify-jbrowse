@@ -10,6 +10,7 @@ export interface FastaBgzipSource {
     /** BGZF index (e.g. `.gzi`) */
     gziUrl: string;
 }
+export type GffAdapterMode = 'tabix' | 'plain' | 'auto';
 export interface GffBgzipSource {
     /** BGZF-compressed GFF3 URL/path (e.g. `.gff.bgz`) */
     gffUrl: string;
@@ -19,6 +20,13 @@ export interface GffBgzipSource {
     ixUrl?: string;
     ixxUrl?: string;
     metaUrl?: string;
+    /**
+     * Adapter mode: 'auto' (default) uses HEAD to check size and picks plain if small; 'tabix' uses
+     * indexed range requests; 'plain' fetches whole file (for small GFFs to avoid 416).
+     */
+    gffAdapterMode?: GffAdapterMode;
+    /** When gffAdapterMode is 'auto', use plain adapter if file size < this (bytes). Default 256000. */
+    smallGffThresholdBytes?: number;
 }
 export interface GeneViewerAssemblyConfig {
     name: string;

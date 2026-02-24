@@ -5,8 +5,10 @@ import GeneViewerJBrowsePlugin from '../jbrowse/plugin';
 import { buildDefaultSessionConfig } from '../jbrowse/config';
 import { fetchFirstFaiRef } from '../gff';
 import { parseInitialLocation } from '../utils/parseUtils';
-export function useGeneViewerInit(props, assemblyConfig, tracksConfig, setViewState, setError, initialZoomAppliedRef) {
+export function useGeneViewerInit(props, assemblyConfig, tracksConfig, setViewState, setError, initialZoomAppliedRef, initReady = true) {
     useEffect(() => {
+        if (!initReady)
+            return;
         initialZoomAppliedRef.current = false;
         let cancelled = false;
         async function init() {
@@ -75,6 +77,7 @@ export function useGeneViewerInit(props, assemblyConfig, tracksConfig, setViewSt
             cancelled = true;
         };
     }, [
+        initReady,
         props.initialLocation,
         props.initialRegionBp,
         props.assembly.fasta.faiUrl,

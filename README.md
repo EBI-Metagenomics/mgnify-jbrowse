@@ -210,6 +210,27 @@ Configure `csvJoinColumn` and `csvStatusColumn` to match your CSV headers (defau
 
 ---
 
+## Small GFF files
+
+JBrowse uses 128 KB chunked range requests for GFF files. For small GFFs (<128 KB), this can cause HTTP 416 (Range Not Satisfiable). Use `gffAdapterMode` to avoid this:
+
+```tsx
+annotation={{
+  gff: {
+    gffUrl,
+    csiUrl,
+    // gffAdapterMode defaults to 'auto' for automatic detection
+    // smallGffThresholdBytes: 256000,  // Use plain adapter if file < this (bytes)
+  },
+}}
+```
+
+- **`auto`** (default): HEAD request to get `Content-Length`; uses `plain` if size < `smallGffThresholdBytes` (256 KB), otherwise `tabix`.
+- **`tabix`**: Indexed range requests. Best for large GFFs.
+- **`plain`**: Whole-file fetch. Use for small GFFs to avoid 416.
+
+---
+
 ## Build & deploy
 
 ```bash

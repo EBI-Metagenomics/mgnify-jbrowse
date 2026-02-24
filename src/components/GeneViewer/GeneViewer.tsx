@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { createViewState, JBrowseApp } from '@jbrowse/react-app2';
 
 import type { GeneViewerProps } from './types';
-import { queryGffRegion, type GffFeature } from './gff';
+import { queryGffRegion, queryGffRegionFromPlainGff, type GffFeature } from './gff';
 import { setGeneViewerJexlContext } from './jbrowse/plugin';
 import { buildAssemblyConfig, buildTracksConfig } from './jbrowse/config';
 import { GeneViewerLegends, FeaturePanel, GenesInViewTable } from './components';
@@ -19,6 +19,7 @@ import { useGeneViewerSessionSync } from './hooks/useGeneViewerSessionSync';
 import { useGeneViewerClickHandler } from './hooks/useGeneViewerClickHandler';
 import { useJBrowseVisibleRegion } from './hooks/useJBrowseVisibleRegion';
 import { useGeneViewerInit } from './hooks/useGeneViewerInit';
+import { useResolvedGffAdapterMode } from './hooks/useResolvedGffAdapterMode';
 import { useGeneViewerZoom } from './hooks/useGeneViewerZoom';
 import { useGeneViewerTrackRefresh } from './hooks/useGeneViewerTrackRefresh';
 import { useGeneViewerTableNav } from './hooks/useGeneViewerTableNav';
@@ -48,6 +49,14 @@ export default function GeneViewer(props: GeneViewerProps) {
   const jbrowseContainerRef = useRef<HTMLDivElement>(null);
 
   const joinAttribute = props.essentiality?.featureJoinAttribute ?? 'locus_tag';
+
+  const gff = props.annotation.gff;
+  const gffAdapterMode = gff.gffAdapterMode ?? 'auto';
+  const resolvedGffAdapterMode = useResolvedGffAdapterMode(
+    gff.gffUrl,
+    gffAdapterMode,
+    gff.smallGffThresholdBytes ?? 256000,
+  );
 
   // Resolve a clicked feature id (e.g. GFF ID or locus_tag) to the canonical locus_tag for selection/panel/table
   const resolveToLocusTag = useCallback((featureId: string, features: GffFeature[]): string => {
@@ -85,7 +94,7 @@ export default function GeneViewer(props: GeneViewerProps) {
   const visibleRegion = useJBrowseVisibleRegion(viewState, VISIBLE_REGION_POLL_MS);
   const gffQueryAbortRef = useRef<{ cancelled: boolean }>({ cancelled: false });
   useEffect(() => {
-    if (!visibleRegion) return;
+    if (!visibleRegion || resolvedGffAdapterMode === null) return;
     const { refName, start, end } = visibleRegion;
     const regionLen = end - start;
     const buffer = Math.max(0, Math.floor(regionLen * GFF_QUERY_BUFFER_RATIO));
@@ -96,14 +105,23 @@ export default function GeneViewer(props: GeneViewerProps) {
     const token = gffQueryAbortRef.current;
     const run = async () => {
       try {
-        const feats = await queryGffRegion({
-          gffUrl: props.annotation.gff.gffUrl,
-          csiUrl: props.annotation.gff.csiUrl,
-          refName,
-          start: qStart,
-          end: qEnd,
-          featureTypes: genesInViewTypes,
-        });
+        const feats =
+          resolvedGffAdapterMode === 'plain'
+            ? await queryGffRegionFromPlainGff({
+                gffUrl: gff.gffUrl,
+                refName,
+                start: qStart,
+                end: qEnd,
+                featureTypes: genesInViewTypes,
+              })
+            : await queryGffRegion({
+                gffUrl: gff.gffUrl,
+                csiUrl: gff.csiUrl,
+                refName,
+                start: qStart,
+                end: qEnd,
+                featureTypes: genesInViewTypes,
+              });
         if (!token.cancelled) setGenesInView(feats);
       } catch (e: any) {
         if (!token.cancelled) setError(e?.message ?? String(e));
@@ -114,7 +132,7 @@ export default function GeneViewer(props: GeneViewerProps) {
       token.cancelled = true;
       window.clearTimeout(id);
     };
-  }, [visibleRegion, props.annotation.gff.gffUrl, props.annotation.gff.csiUrl, genesInViewTypes]);
+  }, [visibleRegion, resolvedGffAdapterMode, gff.gffUrl, gff.csiUrl, genesInViewTypes]);
 
   const { selectedFeature, selectedLocusTag, selectedEssentiality } = useGeneViewerSelection(
     selectedGeneId,
@@ -161,7 +179,15 @@ export default function GeneViewer(props: GeneViewerProps) {
   );
 
   const assemblyConfig = useMemo(() => buildAssemblyConfig(props), [props]);
-  const tracksConfig = useMemo(() => buildTracksConfig(props), [props]);
+  const tracksConfig = useMemo(
+    () =>
+      buildTracksConfig(props, {
+        adapterMode: resolvedGffAdapterMode ?? 'tabix',
+      }),
+    [props, resolvedGffAdapterMode],
+  );
+
+  const initReady = gffAdapterMode !== 'auto' || resolvedGffAdapterMode !== null;
 
   useGeneViewerInit(
     props,
@@ -170,6 +196,7 @@ export default function GeneViewer(props: GeneViewerProps) {
     setViewState,
     setError,
     initialZoomAppliedRef,
+    initReady,
   );
 
   useGeneViewerZoom(viewState, props, initialZoomAppliedRef);
